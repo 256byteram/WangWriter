@@ -61,6 +61,10 @@
 #define PRINTER_CONTROL	0x5C
 #define ERROR_DISPLAY	0x5F
 
+#define DISK_TRACKS		35
+#define DISK_SECTORS	16
+#define DISK_BYTES		256
+
 typedef struct wangwriter
 {
 	z80_t cpu;
@@ -73,9 +77,22 @@ typedef struct wangwriter
 	bool keyboard_strobe;
 	bool printer_enable;
 	bool fdc_irq;
+	bool fdc_drq;
 	bool fdc_tc;
 	bool rtc_tick;
 } wangwriter_t;
+
+typedef struct diskdrive
+{
+	char *image_name;
+	FILE *image;
+	uint8_t buffer[512];
+	int data_p;
+	int drive;
+	int sector;
+	int track;
+	int sector_size;
+} diskdrive_t;
 
 int fdc_seektrack (int drive, int track, void* user_data);
 int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* user_data);

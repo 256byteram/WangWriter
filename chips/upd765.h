@@ -74,7 +74,8 @@ extern "C" {
 
 /* control pins */
 #define UPD765_CS   (1ULL<<40)  /* in: chip select */
-#define UPD765_INT	(1ULL<<41)
+#define UPD765_DRQ	(1ULL<<41)
+#define UPD765_INT	(1ULL<<42)
 
 /* extract 8-bit data bus from 64-bit pins */
 #define UPD765_GET_DATA(p) ((uint8_t)(((p)&0xFF0000ULL)>>16))
@@ -389,7 +390,7 @@ static void _upd765_cmd(upd765_t* upd) {
                 // the following assert triggers in the CPC demo "CRTC"
                 //CHIPS_ASSERT((upd->sector_info.n != 0) && (upd->fifo[8] == 0xFF));
                 /* FIXME: handle read several sectors at a time via EOT arg */
-                CHIPS_ASSERT(upd->sector_info.r == upd->fifo[6]);
+                //CHIPS_ASSERT(upd->sector_info.r == upd->fifo[6]);
                 const int fdd_index = upd->st[0] & 3;
                 const int side = (upd->st[0] & 4) >> 2;
                 const int res = upd->seeksector_cb(fdd_index, side, &upd->sector_info, upd->user_data);
@@ -655,8 +656,11 @@ void upd765_reset(upd765_t* upd) {
 
 uint64_t _upd765_update_int (upd765_t *upd, uint64_t pins)
 {
-	return pins |= (upd->phase == UPD765_PHASE_IDLE || upd->phase == UPD765_PHASE_RESULT) ? UPD765_INT : 0;
+	pins |= (upd->phase == UPD765_PHASE_IDLE || upd->phase == UPD765_PHASE_RESULT) ? UPD765_INT : 0;
+	pins |= (upd->cmd == UPD765_CMD_READ_DATA) ? UPD765_DRQ : 0;
+	return pins;
 }
+
 uint64_t upd765_iorq(upd765_t* upd, uint64_t pins) {
     if (pins & UPD765_CS) {
         if (pins & UPD765_RD) {

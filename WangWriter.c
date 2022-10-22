@@ -149,6 +149,12 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 
 	pins = z80_tick (&machine->cpu, pins);
 
+	// This is a hack to get past the interrupt counter
+	if (machine->cpu.pc == 0xC55E)
+	{
+		machine->cpu.b = 0x44;
+	}
+
 	if (pins & Z80_MREQ)
 	{
 		const uint16_t addr = Z80_GET_ADDR(pins);
@@ -400,6 +406,10 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 	{
 		pins |= Z80PIO_PB7;
 	}
+	if (machine->fdc_drq)
+	{
+		pins |= Z80PIO_PB6;
+	}
 	// Tie Keyboard Strobe to data input write of PORTA
 	if (machine->keyboard_strobe)
 	{
@@ -457,21 +467,28 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 	// FDC
 	pins &= Z80_PIN_MASK;
 
-	if ((pins & Z80_IORQ) != 0 && ((pins & Z80_M1) == 0) &&
+	if ((pins & Z80_IORQ) != 0 &&
 		( ( (Z80_GET_ADDR(pins) & 0xFF) == DISK_DATA) ||
 		  ( (Z80_GET_ADDR(pins) & 0xFF) == DISK_STATUS) ))
 	{
 		pins |= UPD765_CS;
-		printf ("FDC select PC = %04X addr = %02X op = %02X\n", machine->cpu.pc, Z80_GET_ADDR(pins) & 0xFF, machine->cpu.opcode);
 	}
 
+	if ((pins & UPD765_CS) && (pins & Z80_WR))
+	{
+		printf ("FDC write %02X\n", Z80_GET_DATA(pins));
+	}
 	old = (pins & Z80_INT) ? true : false;
 	pins = upd765_iorq(&machine->fdc, pins);
 	if (old != ((pins & Z80_INT) ? true : false))
 			printf ("FDC asserted IRQ\n");
-
-	// Get FDC IRQ
+	if ((pins & UPD765_CS) && (pins & Z80_RD))
+	{
+		printf ("FDC read %02X\n", Z80_GET_DATA(pins));
+	}
+	// Get FDC IRQ and DRQ
 	machine->fdc_irq = (pins & UPD765_INT);
+	machine->fdc_drq = (pins & UPD765_DRQ);
 
 	if ((~pins & (Z80_IORQ | Z80_M1)) == 0)
 	{
@@ -481,12 +498,12 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 		printf ("Z80 INT ACK PC = %04X BC = %04X vect = %02X = %02X%02X chain = %i\n", machine->cpu.pc, machine->cpu.bc, Z80_GET_DATA(pins), vect1, vect0, chain);
 	}
 
+	fflush(stdout);
 	return pins & Z80_PIN_MASK;
 }
 
 int emulate(uint16_t origin)
 {
-	FILE *fp;
 	SDL_Event event;
 	SDL_Window *window;
 	SDL_Renderer *renderer;
@@ -494,13 +511,17 @@ int emulate(uint16_t origin)
 
 	wangwriter_t machine = {0};
 	uint64_t cpu_pins = 0;
+	diskdrive_t disk = {0};
+
+	disk.image_name = "NotSystemDisk.bin";
 
 	upd765_desc_t fdc_desc = {
 		.seektrack_cb = fdc_seektrack,
 		.seeksector_cb = fdc_seeksector,
 		.read_cb = fdc_read,
 		.trackinfo_cb = fdc_trackinfo,
-		.driveinfo_cb = fdc_driveinfo
+		.driveinfo_cb = fdc_driveinfo,
+		.user_data = &disk
 	};
 
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) != 0)
@@ -552,13 +573,15 @@ int emulate(uint16_t origin)
 		if (event.type == SDL_QUIT) break;
 		if (event.type == SDL_KEYDOWN)
 		{
-			/*
+
+			FILE *fp;
 			fp = fopen("snapshot.bin", "wb");
-			fwrite (ram, 1, 32768, fp);
+			fwrite (ram, 1, 16384, fp);
 			fclose (fp);
 			printf ("Snapshot of RAM written\n");
-			*/
+
 			printf ("PC = %04X A = %02X B = %02X\n", machine.cpu.pc, machine.cpu.a, machine.cpu.b);
+			fflush (stdout);
 		}
 		//if (event.type == SDL_KEYUP) keytab[event.key.keysym.scancode] = 0;
 
@@ -567,6 +590,9 @@ int emulate(uint16_t origin)
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 	}
+
+	if (disk.image)
+		fclose (disk.image);
 
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
@@ -694,26 +720,67 @@ void update_framebuffer(uint32_t *fb)
 
 int fdc_seektrack (int drive, int track, void* user_data)
 {
-	return 0;
+	diskdrive_t *disk = user_data;
+
+	printf ("Seek to track %i\n", track);
+	disk->track = track;
+	return UPD765_RESULT_SUCCESS;
 }
 
 
 int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* user_data)
 {
-	return 0;
+	diskdrive_t *disk = user_data;
+	int cyl = disk->track * ((side) ? 2 : 1);
+	//disk->track = (inout_info->c * 2) + side;
+	disk->sector = inout_info->r;
+	disk->sector_size = (128 << inout_info->n);
+	disk->data_p = 0;
+
+	printf ("Seek Sector cyl=%i sec=%i siz=%i\n", cyl, disk->sector, disk->sector_size);
+
+	if (disk->image == NULL)
+	{
+		disk->image = fopen (disk->image_name, "rb");
+		if (disk->image == NULL)
+		{
+			return UPD765_RESULT_NOT_READY;
+		}
+	}
+
+	fseek (disk->image, ((cyl * DISK_SECTORS) + (disk->sector - 1)) * DISK_BYTES, SEEK_SET);
+	fread (disk->buffer, 1, disk->sector_size, disk->image);
+
+	return UPD765_RESULT_SUCCESS;
 }
 
 int fdc_read (int drive, int side, void* user_data, uint8_t* out_data)
 {
-	return 0;
+	diskdrive_t *disk = user_data;
+
+	*out_data = disk->buffer[disk->data_p];
+	disk->data_p++;
+
+	if (disk->data_p >= disk->sector_size)
+	{
+		disk->data_p = 0;
+		return UPD765_RESULT_END_OF_SECTOR;
+	}
+	return UPD765_RESULT_SUCCESS;
 }
 
 int fdc_trackinfo (int drive, int side, void* user_data, upd765_sectorinfo_t* out_info)
 {
-	return 0;
+	//diskdrive_t *disk = user_data;
+	printf ("TRACK INFO\n");
+	out_info->st1 = 0;
+	out_info->st2 = 0x04;
+	return UPD765_RESULT_SUCCESS;
 }
 
 void fdc_driveinfo (int drive, void* user_data, upd765_driveinfo_t* out_info)
 {
+	//diskdrive_t *disk = user_data;
+	printf ("DRIVEINFO\n");
 
 }
