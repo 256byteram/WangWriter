@@ -76,6 +76,7 @@ extern "C" {
 #define UPD765_CS   (1ULL<<40)  /* in: chip select */
 #define UPD765_DRQ	(1ULL<<41)
 #define UPD765_INT	(1ULL<<42)
+#define UPD765_TC	(1ULL<<43)
 
 /* extract 8-bit data bus from 64-bit pins */
 #define UPD765_GET_DATA(p) ((uint8_t)(((p)&0xFF0000ULL)>>16))
@@ -658,6 +659,11 @@ uint64_t _upd765_update_int (upd765_t *upd, uint64_t pins)
 {
 	pins |= (upd->phase == UPD765_PHASE_IDLE || upd->phase == UPD765_PHASE_RESULT) ? UPD765_INT : 0;
 	pins |= (upd->cmd == UPD765_CMD_READ_DATA) ? UPD765_DRQ : 0;
+	if (pins & UPD765_TC)
+	{
+		upd->phase = UPD765_PHASE_EXEC;
+		_upd765_to_phase_result(upd);
+	}
 	return pins;
 }
 

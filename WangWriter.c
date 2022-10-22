@@ -51,7 +51,8 @@ int emulate(uint16_t origin);
 void update_framebuffer (uint32_t *fb);
 
 #ifdef WIN32
-int WinMain ()
+#include <windows.h>
+int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 #else
 int main(int argc, char *argv[])
 #endif
@@ -78,7 +79,7 @@ int main(int argc, char *argv[])
 		execute = 0;
 	}
 
-	fp = fopen("./roms/D2716.BIN", "rb");
+	fp = fopen("D2716.BIN", "rb");
 	if (fp == NULL)
 	{
 		fprintf (stderr, "Unable to open D2716.BIN\n");
@@ -90,7 +91,7 @@ int main(int argc, char *argv[])
 		fclose (fp);
 	}
 
-	fp = fopen("./roms/MM2708C.BIN", "rb");
+	fp = fopen("MM2708C.BIN", "rb");
 	if (fp == NULL)
 	{
 		fprintf (stderr, "Unable to open MM2708C.BIN\n");
@@ -218,7 +219,6 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 			{
 				case DISK_CONTROL:
 				{
-					printf ("Read FDC control\n");
 					Z80_SET_DATA(pins, disk_control);
 					break;
 				}
@@ -370,7 +370,7 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 	//pins |= Z80CTC_CLKTRG0 | Z80CTC_CLKTRG1 | Z80CTC_CLKTRG3;
 	if (machine->rtc_tick)
 	{
-		//pins |= Z80CTC_CLKTRG2;
+		pins |= Z80CTC_CLKTRG2;
 		machine->rtc_tick = false;
 	}
 
@@ -467,6 +467,9 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 	// FDC
 	pins &= Z80_PIN_MASK;
 
+	if (machine->fdc_tc)
+		pins |= UPD765_TC;
+
 	if ((pins & Z80_IORQ) != 0 &&
 		( ( (Z80_GET_ADDR(pins) & 0xFF) == DISK_DATA) ||
 		  ( (Z80_GET_ADDR(pins) & 0xFF) == DISK_STATUS) ))
@@ -474,29 +477,14 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 		pins |= UPD765_CS;
 	}
 
-	if ((pins & UPD765_CS) && (pins & Z80_WR))
-	{
-		printf ("FDC write %02X\n", Z80_GET_DATA(pins));
-	}
 	old = (pins & Z80_INT) ? true : false;
 	pins = upd765_iorq(&machine->fdc, pins);
 	if (old != ((pins & Z80_INT) ? true : false))
 			printf ("FDC asserted IRQ\n");
-	if ((pins & UPD765_CS) && (pins & Z80_RD))
-	{
-		printf ("FDC read %02X\n", Z80_GET_DATA(pins));
-	}
+
 	// Get FDC IRQ and DRQ
 	machine->fdc_irq = (pins & UPD765_INT);
 	machine->fdc_drq = (pins & UPD765_DRQ);
-
-	if ((~pins & (Z80_IORQ | Z80_M1)) == 0)
-	{
-		const uint8_t vect0 = ram[(machine->cpu.i << 8) | Z80_GET_DATA(pins)];
-		const uint8_t vect1 = ram[((machine->cpu.i << 8) | (Z80_GET_DATA(pins))) + 1];
-
-		printf ("Z80 INT ACK PC = %04X BC = %04X vect = %02X = %02X%02X chain = %i\n", machine->cpu.pc, machine->cpu.bc, Z80_GET_DATA(pins), vect1, vect0, chain);
-	}
 
 	fflush(stdout);
 	return pins & Z80_PIN_MASK;
@@ -513,7 +501,7 @@ int emulate(uint16_t origin)
 	uint64_t cpu_pins = 0;
 	diskdrive_t disk = {0};
 
-	disk.image_name = "NotSystemDisk.bin";
+	disk.image_name = "First4k.bin";
 
 	upd765_desc_t fdc_desc = {
 		.seektrack_cb = fdc_seektrack,
@@ -561,6 +549,8 @@ int emulate(uint16_t origin)
 	machine.keyboard_strobe = false;
 	while (1)
 	{
+		uint32_t entry_ticks = SDL_GetTicks();
+		int sleep_us;
 		for (int tick = 0; tick < (F_CPU / 60); tick++)
 		{
 			cpu_pins = cpu_tick (&machine, cpu_pins);
@@ -589,6 +579,9 @@ int emulate(uint16_t origin)
 		SDL_UpdateTexture(texture, NULL, framebuffer, HPIXELS * sizeof(Uint32));
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
+
+		sleep_us = (16.7f - (SDL_GetTicks() - entry_ticks)) * 1000;
+		if (sleep_us > 0) usleep(sleep_us);
 	}
 
 	if (disk.image)
@@ -608,7 +601,22 @@ void update_framebuffer(uint32_t *fb)
 	{
 		for (int c = 0; c < COLUMNS; c++)
 		{
-			uint8_t ch = vram[r * 0x100 + c + 0x2000];
+			uint8_t ch = vram[r * 0x100 + c+ 0x2000];
+			uint8_t attr = vram[r * 0x100 + c];
+			uint32_t fore, back;
+
+			back = 0;
+			if (attr & (1<<D3))
+				fore = 0x0099FF99;		// High intensity
+			else
+				fore = 0x0022AA22;		// Normal intensity
+
+			if (attr & (1<<D2))
+			{
+				back = fore;
+				fore = 0;
+			}
+
 			if (ch < 128)
 			{
 				for (int l = 0; l < 8; l++)
@@ -620,11 +628,11 @@ void update_framebuffer(uint32_t *fb)
 						int pix = (r * HPIXELS * 16) + (l * HPIXELS * 2) + (c * 8) + p;
 						if (d & sh)
 						{
-							fb[pix] = 0x0055FF55;
+							fb[pix] = fore;
 						}
 						else
 						{
-							fb[pix] = 0;
+							fb[pix] = back;
 						}
 						sh >>= 1;
 					}
@@ -720,9 +728,9 @@ void update_framebuffer(uint32_t *fb)
 
 int fdc_seektrack (int drive, int track, void* user_data)
 {
-	diskdrive_t *disk = user_data;
+	if (drive > 1) return UPD765_RESULT_NOT_READY;
 
-	printf ("Seek to track %i\n", track);
+	diskdrive_t *disk = user_data;
 	disk->track = track;
 	return UPD765_RESULT_SUCCESS;
 }
@@ -737,7 +745,7 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 	disk->sector_size = (128 << inout_info->n);
 	disk->data_p = 0;
 
-	printf ("Seek Sector cyl=%i sec=%i siz=%i\n", cyl, disk->sector, disk->sector_size);
+	if (drive > 1) return UPD765_RESULT_NOT_READY;
 
 	if (disk->image == NULL)
 	{
@@ -757,14 +765,16 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 int fdc_read (int drive, int side, void* user_data, uint8_t* out_data)
 {
 	diskdrive_t *disk = user_data;
+	if (drive > 1) return UPD765_RESULT_NOT_READY;
 
 	*out_data = disk->buffer[disk->data_p];
 	disk->data_p++;
 
 	if (disk->data_p >= disk->sector_size)
 	{
+		// Continue reading sectors
 		disk->data_p = 0;
-		return UPD765_RESULT_END_OF_SECTOR;
+		fread (disk->buffer, 1, disk->sector_size, disk->image);
 	}
 	return UPD765_RESULT_SUCCESS;
 }
@@ -772,7 +782,9 @@ int fdc_read (int drive, int side, void* user_data, uint8_t* out_data)
 int fdc_trackinfo (int drive, int side, void* user_data, upd765_sectorinfo_t* out_info)
 {
 	//diskdrive_t *disk = user_data;
-	printf ("TRACK INFO\n");
+
+	if (drive > 1) return UPD765_RESULT_NOT_READY;
+
 	out_info->st1 = 0;
 	out_info->st2 = 0x04;
 	return UPD765_RESULT_SUCCESS;
