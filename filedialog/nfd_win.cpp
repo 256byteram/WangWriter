@@ -384,7 +384,8 @@ static nfdresult_t SetDefaultPath( IFileDialog *dialog, const char *defaultPath 
 /* public */
 
 
-nfdresult_t NFD_OpenDialog( const nfdchar_t *filterList,
+nfdresult_t NFD_OpenDialog( const nfdchar_t *title,
+							const nfdchar_t *filterList,
                             const nfdchar_t *defaultPath,
                             nfdchar_t **outPath )
 {

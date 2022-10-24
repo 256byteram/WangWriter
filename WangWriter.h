@@ -84,7 +84,7 @@ typedef struct wangwriter
 
 typedef struct diskdrive
 {
-	char *image_name;
+	char image_name[256];
 	FILE *image;
 	uint8_t buffer[512];
 	int data_p;

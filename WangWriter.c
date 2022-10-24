@@ -86,12 +86,14 @@ int main(int argc, char *argv[])
 	if (fp == NULL)
 	{
 		if (execute)
+		{
 			result = NFD_OpenDialog( "Locate D2716.BIN", NULL, NULL, &outPath );
 
-		if (result != NFD_OKAY)
-			execute = 0;
-		else
-			fp = fopen(outPath, "rb");
+			if (result != NFD_OKAY)
+				execute = 0;
+			else
+				fp = fopen(outPath, "rb");
+		}
 	}
 
 	if (execute)
@@ -104,12 +106,14 @@ int main(int argc, char *argv[])
 	if (fp == NULL)
 	{
 		if (execute)
+		{
 			result = NFD_OpenDialog( "Locate MM2708.BIN", NULL, NULL, &outPath );
 
-		if (result != NFD_OKAY)
-			execute = 0;
-		else
-			fp = fopen(outPath, "rb");
+			if (result != NFD_OKAY)
+				execute = 0;
+			else
+				fp = fopen(outPath, "rb");
+		}
 	}
 
 	if (execute)
@@ -516,8 +520,6 @@ int emulate(uint16_t origin)
 	uint64_t cpu_pins = 0;
 	diskdrive_t disk = {0};
 
-	disk.image_name = "First4k.bin";
-
 	upd765_desc_t fdc_desc = {
 		.seektrack_cb = fdc_seektrack,
 		.seeksector_cb = fdc_seeksector,
@@ -589,6 +591,21 @@ int emulate(uint16_t origin)
 			fflush (stdout);
 		}
 		//if (event.type == SDL_KEYUP) keytab[event.key.keysym.scancode] = 0;
+		if (event.type == SDL_MOUSEBUTTONDOWN)
+		{
+			int32_t x, y;
+			SDL_GetMouseState(&x, &y);
+			if (y > VPIXELS)
+			{
+				nfdchar_t *filename;
+				nfdresult_t result = NFD_OpenDialog( "Disk Image", NULL, NULL, &filename);
+				if (result == NFD_OKAY)
+				{
+					strcpy (disk.image_name, filename);
+					printf ("Disk image set to: %s\n", disk.image_name);
+				}
+			}
+		}
 
 		update_framebuffer(framebuffer);
 		SDL_UpdateTexture(texture, NULL, framebuffer, HPIXELS * sizeof(Uint32));
@@ -761,6 +778,10 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 	disk->data_p = 0;
 
 	if (drive > 1) return UPD765_RESULT_NOT_READY;
+
+	// No image specified
+	if (strlen(disk->image_name) == 0)
+		return UPD765_RESULT_NOT_READY;
 
 	if (disk->image == NULL)
 	{
