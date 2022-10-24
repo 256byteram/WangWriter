@@ -165,7 +165,8 @@ static void WaitForCleanup(void)
                                  
 /* public */
 
-nfdresult_t NFD_OpenDialog( const nfdchar_t *filterList,
+nfdresult_t NFD_OpenDialog( const nfdchar_t *title,
+							const nfdchar_t *filterList,
                             const nfdchar_t *defaultPath,
                             nfdchar_t **outPath )
 {    
@@ -178,7 +179,7 @@ nfdresult_t NFD_OpenDialog( const nfdchar_t *filterList,
         return NFD_ERROR;
     }
 
-    dialog = gtk_file_chooser_dialog_new( "Open File",
+    dialog = gtk_file_chooser_dialog_new( title,
                                           NULL,
                                           GTK_FILE_CHOOSER_ACTION_OPEN,
                                           "_Cancel", GTK_RESPONSE_CANCEL,

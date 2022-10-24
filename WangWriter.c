@@ -11,6 +11,7 @@
 #include "chips/upd765.h"
 #include "VTAC.h"
 #include "WangWriter.h"
+#include "nfd.h"
 
 /* CPU Parameters */
 #define F_CPU 4000000
@@ -60,6 +61,8 @@ int main(int argc, char *argv[])
 	int execute = 1;
 	uint16_t origin = 0xC000;
 	FILE *fp;
+	nfdchar_t *outPath = NULL;
+	nfdresult_t result;
 
 	ram = malloc (32768);		// Main RAM below 0x8000
 	for (int i = 0; i < 7; i++)
@@ -82,10 +85,16 @@ int main(int argc, char *argv[])
 	fp = fopen("D2716.BIN", "rb");
 	if (fp == NULL)
 	{
-		fprintf (stderr, "Unable to open D2716.BIN\n");
-		execute = 0;
+		if (execute)
+			result = NFD_OpenDialog( "Locate D2716.BIN", NULL, NULL, &outPath );
+
+		if (result != NFD_OKAY)
+			execute = 0;
+		else
+			fp = fopen(outPath, "rb");
 	}
-	else
+
+	if (execute)
 	{
 		fread (rom, 1, 2048, fp);
 		fclose (fp);
@@ -94,10 +103,16 @@ int main(int argc, char *argv[])
 	fp = fopen("MM2708C.BIN", "rb");
 	if (fp == NULL)
 	{
-		fprintf (stderr, "Unable to open MM2708C.BIN\n");
-		execute = 0;
+		if (execute)
+			result = NFD_OpenDialog( "Locate MM2708.BIN", NULL, NULL, &outPath );
+
+		if (result != NFD_OKAY)
+			execute = 0;
+		else
+			fp = fopen(outPath, "rb");
 	}
-	else
+
+	if (execute)
 	{
 		fread (charrom, 1, 1024, fp);
 		fclose (fp);
