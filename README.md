@@ -1,4 +1,4 @@
-# WangWriter Emultor
+# WangWriter Emulator
 
 Based on the 'chips' source code available at https://github.com/floooh/chips
 
