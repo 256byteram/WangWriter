@@ -90,8 +90,10 @@ typedef struct diskdrive
 	int data_p;
 	int drive;
 	int sector;
+	int multi_sector;
 	int track;
 	int sector_size;
+	uint8_t cmd;
 } diskdrive_t;
 
 int fdc_seektrack (int drive, int track, void* user_data);

@@ -771,11 +771,12 @@ int fdc_seektrack (int drive, int track, void* user_data)
 int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* user_data)
 {
 	diskdrive_t *disk = user_data;
-	int cyl = disk->track * ((side) ? 2 : 1);
-	//disk->track = (inout_info->c * 2) + side;
+	int cyl = disk->track * 2 + ((side) ? 1 : 0);
 	disk->sector = inout_info->r;
+	disk->multi_sector = disk->sector;
 	disk->sector_size = (128 << inout_info->n);
 	disk->data_p = 0;
+	disk->cmd = inout_info->cmd;
 
 	if (drive > 1) return UPD765_RESULT_NOT_READY;
 
@@ -792,7 +793,7 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 		}
 	}
 
-	fseek (disk->image, ((cyl * DISK_SECTORS) + (disk->sector - 1)) * DISK_BYTES, SEEK_SET);
+	fseek (disk->image, ((cyl * DISK_SECTORS) + (disk->sector - 1)) * disk->sector_size, SEEK_SET);
 	fread (disk->buffer, 1, disk->sector_size, disk->image);
 
 	return UPD765_RESULT_SUCCESS;
@@ -811,6 +812,17 @@ int fdc_read (int drive, int side, void* user_data, uint8_t* out_data)
 		// Continue reading sectors
 		disk->data_p = 0;
 		fread (disk->buffer, 1, disk->sector_size, disk->image);
+
+		printf ("Load sector %i\n", disk->multi_sector);
+		disk->multi_sector++;
+
+		// Scan two sides if disk->cmd D7 is set
+		if (disk->multi_sector > DISK_SECTORS * ((disk->cmd & 0x80) ? 2 : 1))
+		{
+			printf ("disk->cmd = %02X disk->sector = %i disk->multi_sector = %i\n", disk->cmd, disk->sector, disk->multi_sector);
+			disk->multi_sector = disk->sector;
+			return UPD765_RESULT_END_OF_SECTOR;
+		}
 	}
 	return UPD765_RESULT_SUCCESS;
 }

@@ -168,6 +168,7 @@ typedef struct {
     /* current physical track number */
     int physical_track;
     /* sector-info block (with logical attributes) */
+    uint8_t cmd;			/* Command for MT/MFM/SK */
     uint8_t c;              /* cylinder (logical track number) */
     uint8_t h;              /* head address (logical side) */
     uint8_t r;              /* record (sector id byte) */
@@ -280,9 +281,9 @@ static inline uint8_t _upd765_fifo_rd(upd765_t* upd) {
 static void _upd765_to_phase_command(upd765_t* upd, uint8_t data) {
     CHIPS_ASSERT(upd->phase == UPD765_PHASE_IDLE);
     upd->phase = UPD765_PHASE_COMMAND;
-    upd->cmd = data & 0x1F;
+    upd->cmd = data;
     int num_cmd_bytes;
-    switch (upd->cmd) {
+    switch (upd->cmd  & 0x1F) {
         case UPD765_CMD_READ_DATA:
         case UPD765_CMD_READ_DELETED_DATA:
         case UPD765_CMD_WRITE_DATA:
@@ -330,7 +331,7 @@ static void _upd765_to_phase_idle(upd765_t* upd) {
 static void _upd765_to_phase_result(upd765_t* upd) {
     CHIPS_ASSERT((upd->phase == UPD765_PHASE_COMMAND) || (upd->phase == UPD765_PHASE_EXEC));
     upd->phase = UPD765_PHASE_RESULT;
-    switch (upd->cmd) {
+    switch (upd->cmd  & 0x1F) {
         case UPD765_CMD_READ_DATA:
         case UPD765_CMD_READ_DELETED_DATA:
         case UPD765_CMD_WRITE_DATA:
@@ -377,7 +378,7 @@ static void _upd765_to_phase_result(upd765_t* upd) {
 */
 static void _upd765_cmd(upd765_t* upd) {
     CHIPS_ASSERT(upd->phase == UPD765_PHASE_COMMAND);
-    switch (upd->cmd) {
+    switch (upd->cmd  & 0x1F) {
         case UPD765_CMD_READ_DATA:
             {
                 upd->st[0] = upd->fifo[1] & 7;      /* HD, US1, US0 */
@@ -394,6 +395,7 @@ static void _upd765_cmd(upd765_t* upd) {
                 //CHIPS_ASSERT(upd->sector_info.r == upd->fifo[6]);
                 const int fdd_index = upd->st[0] & 3;
                 const int side = (upd->st[0] & 4) >> 2;
+                upd->sector_info.cmd = upd->cmd;
                 const int res = upd->seeksector_cb(fdd_index, side, &upd->sector_info, upd->user_data);
                 if (UPD765_RESULT_SUCCESS == res) {
                     _upd765_to_phase_exec(upd);
@@ -535,7 +537,7 @@ static void _upd765_cmd(upd765_t* upd) {
 static uint8_t _upd765_exec_rd(upd765_t* upd) {
     CHIPS_ASSERT(upd->phase == UPD765_PHASE_EXEC);
     uint8_t data = 0xFF;
-    switch (upd->cmd) {
+    switch (upd->cmd & 0x1F) {
         case UPD765_CMD_READ_DATA:
             {
                 /* read next sector data byte from FDD */
@@ -658,7 +660,7 @@ void upd765_reset(upd765_t* upd) {
 uint64_t _upd765_update_int (upd765_t *upd, uint64_t pins)
 {
 	pins |= (upd->phase == UPD765_PHASE_IDLE || upd->phase == UPD765_PHASE_RESULT) ? UPD765_INT : 0;
-	pins |= (upd->cmd == UPD765_CMD_READ_DATA) ? UPD765_DRQ : 0;
+	pins |= ((upd->cmd & 0x1F) == UPD765_CMD_READ_DATA) ? UPD765_DRQ : 0;
 	if (pins & UPD765_TC)
 	{
 		upd->phase = UPD765_PHASE_EXEC;
