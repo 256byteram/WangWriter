@@ -546,7 +546,6 @@ uint64_t _z80pio_int(z80pio_t* pio, uint64_t pins) {
             // on data bus, clear INT pin and go into "serviced" state.
             if ((p->int_state & Z80PIO_INT_REQUESTED) && ((pins & (Z80PIO_IORQ|Z80PIO_M1)) == (Z80PIO_IORQ|Z80PIO_M1))) {
                 Z80PIO_SET_DATA(pins, p->int_vector);
-                printf ("PIO Vector = %02X\n", p->int_vector);
                 p->int_state = (p->int_state & ~Z80PIO_INT_REQUESTED) | Z80PIO_INT_SERVICED;
                 pins &= ~Z80PIO_INT;
             }

@@ -162,10 +162,8 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
+uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins, const uint8_t key, uint8_t *keyflag)
 {
-	int chain = 0;
-	bool old = 0;
 
 	pins = z80_tick (&machine->cpu, pins);
 
@@ -279,7 +277,6 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 					disk_control = data;
 					if (data & (1<<D5))
 					{
-						printf ("FDC reset\n");
 						upd765_reset (&machine->fdc);
 					}
 
@@ -411,11 +408,7 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 		}
 	}
 
-	old = (pins & Z80_INT) ? true : false;
 	pins = z80ctc_tick(&machine->ctc, pins);
-	if (pins & Z80_IEIO) chain++;
-	if (old != ((pins & Z80_INT) ? true : false))
-		printf ("CTC asserted IRQ\n");
 
 	// PIO A
 	// Tie FDC IRQ to PIOA PA7
@@ -429,11 +422,18 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 	{
 		pins |= Z80PIO_PB6;
 	}
+
+	// Copy keystroke input to PIO PORTA when keyflag != 0
+	Z80PIO_SET_PA(pins, key);
+
 	// Tie Keyboard Strobe to data input write of PORTA
-	if (machine->keyboard_strobe)
+	if (*keyflag && machine->keyboard_strobe)
 	{
-		pins |= Z80PIO_ASTB;
+		pins &= ~Z80PIO_ASTB;
+		*keyflag = 0;
 	}
+	else
+		pins |= Z80PIO_ASTB;
 
 	if (pins & Z80_A0) pins |= Z80PIO_BASEL;
 	if (pins & Z80_A1) pins |= Z80PIO_CDSEL;
@@ -446,11 +446,7 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 		pins |= Z80PIO_CE;
 	}
 
-	old = (pins & Z80_INT) ? true : false;
 	pins = z80pio_tick (&machine->pioa, pins);
-	if (pins & Z80_IEIO) chain++;
-	if (old != ((pins & Z80_INT) ? true : false))
-			printf ("PIOA asserted IRQ\n");
 
 	// Connect output of PB1 to keyboard_strobe
 	if (pins & Z80PIO_PB1)
@@ -461,7 +457,7 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 	// PRINTER
 	pins &= Z80_PIN_MASK;
 
-	// Tie Priter Enable to Printer PIO PB7
+	// Tie Printer Enable to Printer PIO PB7
 	if (machine->printer_enable)
 		pins |= Z80PIO_PB7;
 	else
@@ -478,11 +474,8 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 		pins |= Z80PIO_CE;
 	}
 
-	old = (pins & Z80_INT) ? true : false;
 	pins = z80pio_tick (&machine->pio_printer, pins);
-	if (pins & Z80_IEIO) chain++;
-	if (old != ((pins & Z80_INT) ? true : false))
-				printf ("Printer asserted IRQ\n");
+
 	// FDC
 	pins &= Z80_PIN_MASK;
 
@@ -494,12 +487,11 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins)
 		  ( (Z80_GET_ADDR(pins) & 0xFF) == DISK_STATUS) ))
 	{
 		pins |= UPD765_CS;
+//		if (pins & Z80_WR)
+//			printf ("FDC write %02X\n", Z80_GET_DATA(pins));
 	}
 
-	old = (pins & Z80_INT) ? true : false;
 	pins = upd765_iorq(&machine->fdc, pins);
-	if (old != ((pins & Z80_INT) ? true : false))
-			printf ("FDC asserted IRQ\n");
 
 	// Get FDC IRQ and DRQ
 	machine->fdc_irq = (pins & UPD765_INT);
@@ -515,6 +507,9 @@ int emulate(uint16_t origin)
 	SDL_Window *window;
 	SDL_Renderer *renderer;
 	SDL_Texture *texture;
+
+	uint8_t key = 0;
+	uint8_t keyflag = 0;
 
 	wangwriter_t machine = {0};
 	uint64_t cpu_pins = 0;
@@ -570,10 +565,10 @@ int emulate(uint16_t origin)
 		int sleep_us;
 		for (int tick = 0; tick < (F_CPU / 60); tick++)
 		{
-			cpu_pins = cpu_tick (&machine, cpu_pins);
+			cpu_pins = cpu_tick (&machine, cpu_pins, key, &keyflag);
 		}
 		machine.rtc_tick = true;		// Tick the RTC
-
+		keyflag = 0;
 
 		/* Detect input events */
 		SDL_PollEvent(&event);
@@ -583,12 +578,20 @@ int emulate(uint16_t origin)
 
 			FILE *fp;
 			fp = fopen("snapshot.bin", "wb");
-			fwrite (ram, 1, 16384, fp);
+			fwrite (ram, 1, 32768, fp);
+			fwrite (bankram[0], 1, 16384, fp);
 			fclose (fp);
 			printf ("Snapshot of RAM written\n");
 
 			printf ("PC = %04X A = %02X B = %02X\n", machine.cpu.pc, machine.cpu.a, machine.cpu.b);
 			fflush (stdout);
+
+
+			/*
+			key = event.key.keysym.sym;
+			if (keyflag) printf ("Keyflag 1->0\n");
+			keyflag = 1;
+			*/
 		}
 		//if (event.type == SDL_KEYUP) keytab[event.key.keysym.scancode] = 0;
 		if (event.type == SDL_MOUSEBUTTONDOWN)
@@ -639,9 +642,9 @@ void update_framebuffer(uint32_t *fb)
 
 			back = 0;
 			if (attr & (1<<D3))
-				fore = 0x0099FF99;		// High intensity
+				fore = 0x00AAFFAA;		// High intensity
 			else
-				fore = 0x0022AA22;		// Normal intensity
+				fore = 0x0000FF00;		// Normal intensity
 
 			if (attr & (1<<D2))
 			{
@@ -764,15 +767,17 @@ int fdc_seektrack (int drive, int track, void* user_data)
 
 	diskdrive_t *disk = user_data;
 	disk->track = track;
-	return UPD765_RESULT_SUCCESS;
+	if (track < 35)
+		return UPD765_RESULT_SUCCESS;
+	else
+		return UPD765_RESULT_NOT_FOUND;
 }
 
 
 int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* user_data)
 {
 	diskdrive_t *disk = user_data;
-	int cyl = disk->track * 2 + ((side) ? 1 : 0);
-	disk->sector = inout_info->r;
+	disk->sector = inout_info->r + (side ? DISK_SECTORS : 0);
 	disk->multi_sector = disk->sector;
 	disk->sector_size = (128 << inout_info->n);
 	disk->data_p = 0;
@@ -784,6 +789,9 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 	if (strlen(disk->image_name) == 0)
 		return UPD765_RESULT_NOT_READY;
 
+	if (disk->track > 35)
+		return UPD765_RESULT_NOT_FOUND;
+
 	if (disk->image == NULL)
 	{
 		disk->image = fopen (disk->image_name, "rb");
@@ -793,8 +801,16 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 		}
 	}
 
-	fseek (disk->image, ((cyl * DISK_SECTORS) + (disk->sector - 1)) * disk->sector_size, SEEK_SET);
+	printf ("SEEK inout_info->r = %i disk->sector = %i cyl = %i side = %i file offset = %04X\n", inout_info->r,
+																								disk->sector,
+																								disk->track,
+																								side,
+																								((disk->track * DISK_SECTORS * 2) + (disk->sector - 1)) * disk->sector_size);
+	fseek (disk->image, ((disk->track * DISK_SECTORS * 2) + (disk->sector - 1)) * disk->sector_size, SEEK_SET);
 	fread (disk->buffer, 1, disk->sector_size, disk->image);
+
+	inout_info->st1 = 0;
+	inout_info->st2 = 0;
 
 	return UPD765_RESULT_SUCCESS;
 }
@@ -812,14 +828,11 @@ int fdc_read (int drive, int side, void* user_data, uint8_t* out_data)
 		// Continue reading sectors
 		disk->data_p = 0;
 		fread (disk->buffer, 1, disk->sector_size, disk->image);
-
-		printf ("Load sector %i\n", disk->multi_sector);
 		disk->multi_sector++;
 
 		// Scan two sides if disk->cmd D7 is set
 		if (disk->multi_sector > DISK_SECTORS * ((disk->cmd & 0x80) ? 2 : 1))
 		{
-			printf ("disk->cmd = %02X disk->sector = %i disk->multi_sector = %i\n", disk->cmd, disk->sector, disk->multi_sector);
 			disk->multi_sector = disk->sector;
 			return UPD765_RESULT_END_OF_SECTOR;
 		}
@@ -834,7 +847,7 @@ int fdc_trackinfo (int drive, int side, void* user_data, upd765_sectorinfo_t* ou
 	if (drive > 1) return UPD765_RESULT_NOT_READY;
 
 	out_info->st1 = 0;
-	out_info->st2 = 0x04;
+	out_info->st2 = 0;
 	return UPD765_RESULT_SUCCESS;
 }
 

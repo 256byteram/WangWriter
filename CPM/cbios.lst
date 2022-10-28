@@ -1,0 +1,3827 @@
+   1:				; CBIOS for WangWriter
+   2:				;
+   3:				; Portions by Digital Research
+   4:				;
+   5:					maclib Z80
+**** Z80.lib ****
+   1:				;	@CHK MACRO USED FOR CHECKING 8 BIT DISPLACMENTS
+   2:				;
+   3:				@CHK	MACRO	?DD	;; USED FOR CHECKING RANGE OF 8-BIT DISP.S
+   4:					IF (?DD GT 7FH) AND (?DD LT 0FF80H)
+   5:				 'DISPLACEMENT RANGE ERROR - Z80 LIB'
+   6:					ENDIF
+   7:					ENDM
+   8:				LDX	MACRO	?R,?D	
+   9:					@CHK	?D
+  10:					DB	0DDH,?R*8+46H,?D
+  11:					ENDM
+  12:				LDY	MACRO	?R,?D	
+  13:					@CHK	?D
+  14:					DB	0FDH,?R*8+46H,?D
+  15:					ENDM
+  16:				STX	MACRO	?R,?D	
+  17:					@CHK	?D
+  18:					DB	0DDH,70H+?R,?D
+  19:					ENDM
+  20:				STY	MACRO	?R,?D	
+  21:					@CHK	?D
+  22:					DB	0FDH,70H+?R,?D
+  23:					ENDM
+  24:				MVIX	MACRO	?N,?D	
+  25:					@CHK	?D
+  26:					DB	0DDH,36H,?D,?N
+  27:					ENDM
+  28:				MVIY	MACRO	?N,?D	
+  29:					@CHK	?D
+  30:					DB	0FDH,36H,?D,?N
+  31:					ENDM
+  32:				LDAI	MACRO		
+  33:					DB	0EDH,57H
+  34:					ENDM
+  35:				LDAR	MACRO		
+  36:					DB	0EDH,5FH
+  37:					ENDM
+  38:				STAI	MACRO		
+  39:					DB	0EDH,47H
+  40:					ENDM
+  41:				STAR	MACRO		
+  42:					DB	0EDH,4FH
+  43:					ENDM
+  44:				
+  45:				LXIX	MACRO	?NNNN	
+  46:					DB	0DDH,21H
+  47:					DW	?NNNN
+  48:					ENDM
+  49:				LXIY	MACRO	?NNNN	
+  50:					DB	0FDH,21H
+  51:					DW	?NNNN
+  52:					ENDM
+  53:				LDED	MACRO	?NNNN	
+  54:					DB	0EDH,5BH
+  55:					DW	?NNNN
+  56:					ENDM
+  57:				LBCD	MACRO	?NNNN	
+  58:					DB	0EDH,4BH
+  59:					DW	?NNNN
+  60:					ENDM
+  61:				LSPD	MACRO	?NNNN	
+  62:					DB	0EDH,07BH
+  63:					DW	?NNNN
+  64:					ENDM
+  65:				LIXD	MACRO	?NNNN	
+  66:					DB	0DDH,2AH
+  67:					DW	?NNNN
+  68:					ENDM
+  69:				LIYD	MACRO	?NNNN	
+  70:					DB	0FDH,2AH
+  71:					DW	?NNNN
+  72:					ENDM
+  73:				SBCD	MACRO	?NNNN	
+  74:					DB	0EDH,43H
+  75:					DW	?NNNN
+  76:					ENDM
+  77:				SDED	MACRO	?NNNN	
+  78:					DB	0EDH,53H
+  79:					DW	?NNNN
+  80:					ENDM
+  81:				SSPD	MACRO	?NNNN	
+  82:					DB	0EDH,73H
+  83:					DW	?NNNN
+  84:					ENDM
+  85:				SIXD	MACRO	?NNNN	
+  86:					DB	0DDH,22H
+  87:					DW	?NNNN
+  88:					ENDM
+  89:				SIYD	MACRO	?NNNN	
+  90:					DB	0FDH,22H
+  91:					DW	?NNNN
+  92:					ENDM
+  93:				SPIX	MACRO		
+  94:					DB	0DDH,0F9H
+  95:					ENDM
+  96:				SPIY	MACRO		
+  97:					DB	0FDH,0F9H
+  98:					ENDM
+  99:				PUSHIX	MACRO		
+ 100:					DB	0DDH,0E5H
+ 101:					ENDM
+ 102:				PUSHIY	MACRO		
+ 103:					DB	0FDH,0E5H
+ 104:					ENDM
+ 105:				POPIX	MACRO		
+ 106:					DB	0DDH,0E1H
+ 107:					ENDM
+ 108:				POPIY	MACRO		
+ 109:					DB	0FDH,0E1H
+ 110:					ENDM
+ 111:				EXAF	MACRO		
+ 112:					DB	08H
+ 113:					ENDM
+ 114:				EXX	MACRO		
+ 115:					DB	0D9H
+ 116:					ENDM
+ 117:				XTIX	MACRO		
+ 118:					DB	0DDH,0E3H
+ 119:					ENDM
+ 120:				XTIY	MACRO		
+ 121:					DB	0FDH,0E3H
+ 122:					ENDM
+ 123:				
+ 124:				LDI	MACRO		
+ 125:					DB	0EDH,0A0H
+ 126:					ENDM
+ 127:				LDIR	MACRO		
+ 128:					DB	0EDH,0B0H
+ 129:					ENDM
+ 130:				LDD	MACRO		
+ 131:					DB	0EDH,0A8H
+ 132:					ENDM
+ 133:				LDDR	MACRO		
+ 134:					DB	0EDH,0B8H
+ 135:					ENDM
+ 136:				CCI	MACRO		
+ 137:					DB	0EDH,0A1H
+ 138:					ENDM
+ 139:				CCIR	MACRO		
+ 140:					DB	0EDH,0B1H
+ 141:					ENDM
+ 142:				CCD	MACRO		
+ 143:					DB	0EDH,0A9H
+ 144:					ENDM
+ 145:				CCDR	MACRO		
+ 146:					DB	0EDH,0B9H
+ 147:					ENDM
+ 148:				
+ 149:				ADDX	MACRO	?D	
+ 150:					@CHK	?D
+ 151:					DB	0DDH,86H,?D
+ 152:					ENDM
+ 153:				ADDY	MACRO	?D	
+ 154:					@CHK	?D
+ 155:					DB	0FDH,86H,?D
+ 156:					ENDM
+ 157:				ADCX	MACRO	?D	
+ 158:					@CHK	?D
+ 159:					DB	0DDH,8EH,?D
+ 160:					ENDM
+ 161:				ADCY	MACRO	?D	
+ 162:					@CHK	?D
+ 163:					DB	0FDH,8EH,?D
+ 164:					ENDM
+ 165:				SUBX	MACRO	?D	
+ 166:					@CHK	?D
+ 167:					DB	0DDH,96H,?D
+ 168:					ENDM
+ 169:				SUBY	MACRO	?D	
+ 170:					@CHK	?D
+ 171:					DB	0FDH,96H,?D
+ 172:					ENDM
+ 173:				SBCX	MACRO	?D	
+ 174:					@CHK	?D
+ 175:					DB	0DDH,9EH,?D
+ 176:					ENDM
+ 177:				SBCY	MACRO	?D	
+ 178:					@CHK	?D
+ 179:					DB	0FDH,9EH,?D
+ 180:					ENDM
+ 181:				ANDX	MACRO	?D	
+ 182:					@CHK	?D
+ 183:					DB	0DDH,0A6H,?D
+ 184:					ENDM
+ 185:				ANDY	MACRO	?D	
+ 186:					@CHK	?D
+ 187:					DB	0FDH,0A6H,?D
+ 188:					ENDM
+ 189:				XORX	MACRO	?D	
+ 190:					@CHK	?D
+ 191:					DB	0DDH,0AEH,?D
+ 192:					ENDM
+ 193:				XORY	MACRO	?D	
+ 194:					@CHK	?D
+ 195:					DB	0FDH,0AEH,?D
+ 196:					ENDM
+ 197:				ORX	MACRO	?D	
+ 198:					@CHK	?D
+ 199:					DB	0DDH,0B6H,?D
+ 200:					ENDM
+ 201:				ORY	MACRO	?D	
+ 202:					@CHK	?D
+ 203:					DB	0FDH,0B6H,?D
+ 204:					ENDM
+ 205:				CMPX	MACRO	?D	
+ 206:					@CHK	?D
+ 207:					DB	0DDH,0BEH,?D
+ 208:					ENDM
+ 209:				CMPY	MACRO	?D	
+ 210:					@CHK	?D
+ 211:					DB	0FDH,0BEH,?D
+ 212:					ENDM
+ 213:				INRX	MACRO	?D	
+ 214:					@CHK	?D
+ 215:					DB	0DDH,34H,?D
+ 216:					ENDM
+ 217:				INRY	MACRO	?D	
+ 218:					@CHK	?D
+ 219:					DB	0FDH,34H,?D
+ 220:					ENDM
+ 221:				DCRX	MACRO	?D	
+ 222:					@CHK	?D
+ 223:					DB	0DDH,035H,?D
+ 224:					ENDM
+ 225:				DCRY	MACRO	?D	
+ 226:					@CHK	?D
+ 227:					DB	0FDH,35H,?D
+ 228:					ENDM
+ 229:				
+ 230:				NEG	MACRO		
+ 231:					DB	0EDH,44H
+ 232:					ENDM
+ 233:				IM0	MACRO		
+ 234:					DB	0EDH,46H
+ 235:					ENDM
+ 236:				IM1	MACRO		
+ 237:					DB	0EDH,56H
+ 238:					ENDM
+ 239:				IM2	MACRO		
+ 240:					DB	0EDH,5EH
+ 241:					ENDM
+ 242:				
+ 243:				
+ 244:     -	0000          	BC	EQU	0
+ 245:     -	0002          	DE	EQU	2
+ 246:     -	0004          	HL	EQU	4
+ 247:     -	0004          	IX	EQU	4	
+ 248:     -	0004          	IY	EQU	4	
+ 249:				DADC	MACRO	?R	
+ 250:					DB	0EDH,?R*8+4AH
+ 251:					ENDM
+ 252:				DSBC	MACRO	?R	
+ 253:					DB	0EDH,?R*8+42H
+ 254:					ENDM
+ 255:				DADX	MACRO	?R	
+ 256:					DB	0DDH,?R*8+09H
+ 257:					ENDM
+ 258:				DADY	MACRO	?R	
+ 259:					DB	0FDH,?R*8+09H
+ 260:					ENDM
+ 261:				INXIX	MACRO		
+ 262:					DB	0DDH,23H
+ 263:					ENDM
+ 264:				INXIY	MACRO		
+ 265:					DB	0FDH,23H
+ 266:					ENDM
+ 267:				DCXIX	MACRO		
+ 268:					DB	0DDH,2BH
+ 269:					ENDM
+ 270:				DCXIY	MACRO		
+ 271:					DB	0FDH,2BH
+ 272:					ENDM
+ 273:				
+ 274:				BIT	MACRO	?N,?R	
+ 275:					DB	0CBH,?N*8+?R+40H
+ 276:					ENDM
+ 277:				SETB	MACRO	?N,?R
+ 278:					DB	0CBH,?N*8+?R+0C0H
+ 279:					ENDM
+ 280:				RES	MACRO	?N,?R
+ 281:					DB	0CBH,?N*8+?R+80H
+ 282:					ENDM
+ 283:				
+ 284:				BITX	MACRO	?N,?D	
+ 285:					@CHK	?D
+ 286:					DB	0DDH,0CBH,?D,?N*8+46H
+ 287:					ENDM
+ 288:				BITY	MACRO	?N,?D	
+ 289:					@CHK	?D
+ 290:					DB	0FDH,0CBH,?D,?N*8+46H
+ 291:					ENDM
+ 292:				SETX	MACRO	?N,?D	
+ 293:					@CHK	?D
+ 294:					DB	0DDH,0CBH,?D,?N*8+0C6H
+ 295:					ENDM
+ 296:				SETY	MACRO	?N,?D	
+ 297:					@CHK	?D
+ 298:					DB	0FDH,0CBH,?D,?N*8+0C6H
+ 299:					ENDM
+ 300:				RESX	MACRO	?N,?D	
+ 301:					@CHK	?D
+ 302:					DB	0DDH,0CBH,?D,?N*8+86H
+ 303:					ENDM
+ 304:				RESY	MACRO	?N,?D	
+ 305:					@CHK	?D
+ 306:					DB	0FDH,0CBH,?D,?N*8+86H
+ 307:					ENDM
+ 308:				
+ 309:				JR	MACRO	?N
+ 310:					DB	18H,?N-$-1
+ 311:					ENDM
+ 312:				JRC	MACRO	?N
+ 313:					DB	38H,?N-$-1
+ 314:					ENDM
+ 315:				JRNC	MACRO	?N
+ 316:					DB	30H,?N-$-1
+ 317:					ENDM
+ 318:				JRZ	MACRO	?N
+ 319:					DB	28H,?N-$-1
+ 320:					ENDM
+ 321:				JRNZ	MACRO	?N
+ 322:					DB	20H,?N-$-1
+ 323:					ENDM
+ 324:				DJNZ	MACRO	?N
+ 325:					DB	10H,?N-$-1
+ 326:					ENDM
+ 327:				
+ 328:				PCIX	MACRO		
+ 329:					DB	0DDH,0E9H
+ 330:					ENDM
+ 331:				PCIY	MACRO		
+ 332:					DB	0FDH,0E9H
+ 333:					ENDM
+ 334:				
+ 335:				RETI	MACRO		
+ 336:					DB	0EDH,4DH
+ 337:					ENDM
+ 338:				RETN	MACRO		
+ 339:					DB	0EDH,45H
+ 340:					ENDM
+ 341:				
+ 342:				INP	MACRO	?R	
+ 343:					DB	0EDH,?R*8+40H
+ 344:					ENDM
+ 345:				OUTP	MACRO	?R	
+ 346:					DB	0EDH,?R*8+41H
+ 347:					ENDM
+ 348:				INI	MACRO		
+ 349:					DB	0EDH,0A2H
+ 350:					ENDM
+ 351:				INIR	MACRO		
+ 352:					DB	0EDH,0B2H
+ 353:					ENDM
+ 354:				IND	MACRO		
+ 355:					DB	0EDH,0AAH
+ 356:					ENDM
+ 357:				INDR	MACRO		
+ 358:					DB	0EDH,0BAH
+ 359:					ENDM
+ 360:				OUTI	MACRO		
+ 361:					DB	0EDH,0A3H
+ 362:					ENDM
+ 363:				OUTIR	MACRO		
+ 364:					DB	0EDH,0B3H
+ 365:					ENDM
+ 366:				OUTD	MACRO		
+ 367:					DB	0EDH,0ABH
+ 368:					ENDM
+ 369:				OUTDR	MACRO		
+ 370:					DB	0EDH,0BBH
+ 371:					ENDM
+ 372:				
+ 373:				
+ 374:				RLCR	MACRO	?R	
+ 375:					DB	0CBH, 00H + ?R
+ 376:					ENDM
+ 377:				RLCX	MACRO	?D	
+ 378:					@CHK	?D
+ 379:					DB	0DDH, 0CBH, ?D, 06H
+ 380:					ENDM
+ 381:				RLCY	MACRO	?D	
+ 382:					@CHK	?D
+ 383:					DB	0FDH, 0CBH, ?D, 06H
+ 384:					ENDM
+ 385:				RALR	MACRO	?R	
+ 386:					DB	0CBH, 10H+?R
+ 387:					ENDM
+ 388:				RALX	MACRO	?D	
+ 389:					@CHK	?D
+ 390:					DB	0DDH, 0CBH, ?D, 16H
+ 391:					ENDM
+ 392:				RALY	MACRO	?D	
+ 393:					@CHK	?D
+ 394:					DB	0FDH, 0CBH, ?D, 16H
+ 395:					ENDM
+ 396:				RRCR	MACRO	?R	
+ 397:					DB	0CBH, 08H + ?R
+ 398:					ENDM
+ 399:				RRCX	MACRO	?D	
+ 400:					@CHK	?D
+ 401:					DB	0DDH, 0CBH, ?D, 0EH
+ 402:					ENDM
+ 403:				RRCY	MACRO	?D	
+ 404:					@CHK	?D
+ 405:					DB	0FDH, 0CBH, ?D, 0EH
+ 406:					ENDM
+ 407:				RARR	MACRO	?R	
+ 408:					DB	0CBH, 18H + ?R
+ 409:					ENDM
+ 410:				RARX	MACRO	?D	
+ 411:					@CHK	?D
+ 412:					DB	0DDH, 0CBH, ?D, 1EH
+ 413:					ENDM
+ 414:				RARY	MACRO	?D	
+ 415:					@CHK	?D
+ 416:					DB	0FDH, 0CBH, ?D, 1EH
+ 417:					ENDM
+ 418:				SLAR	MACRO	?R	
+ 419:					DB	0CBH, 20H + ?R
+ 420:					ENDM
+ 421:				SLAX	MACRO	?D	
+ 422:					@CHK	?D
+ 423:					DB	0DDH, 0CBH, ?D, 26H
+ 424:					ENDM
+ 425:				SLAY	MACRO	?D	
+ 426:					@CHK	?D
+ 427:					DB	0FDH, 0CBH, ?D, 26H
+ 428:					ENDM
+ 429:				SRAR	MACRO	?R	
+ 430:					DB	0CBH, 28H+?R
+ 431:					ENDM
+ 432:				SRAX	MACRO	?D	
+ 433:					@CHK	?D
+ 434:					DB	0DDH, 0CBH, ?D, 2EH
+ 435:					ENDM
+ 436:				SRAY	MACRO	?D	
+ 437:					@CHK	?D
+ 438:					DB	0FDH, 0CBH, ?D, 2EH
+ 439:					ENDM
+ 440:				SRLR	MACRO	?R	
+ 441:					DB	0CBH, 38H + ?R
+ 442:					ENDM
+ 443:				SRLX	MACRO	?D	
+ 444:					@CHK	?D
+ 445:					DB	0DDH, 0CBH, ?D, 3EH
+ 446:					ENDM
+ 447:				SRLY	MACRO	?D	
+ 448:					@CHK	?D
+ 449:					DB	0FDH, 0CBH, ?D, 3EH
+ 450:					ENDM
+ 451:				RLD	MACRO		
+ 452:					DB	0EDH, 6FH
+ 453:					ENDM
+ 454:				RRD	MACRO		
+ 455:					DB	0EDH, 67H
+ 456:					ENDM
+**** cbios.asm ****
+   6:					maclib DISKDEF
+**** DISKDEF.lib ****
+   1:				;	CP/M 2.0 disk re-definition library
+   2:				;
+   3:				;	Copyright (c) 1979
+   4:				;	Digital Research
+   5:				;	Box 579
+   6:				;	Pacific Grove, CA
+   7:				;	93950
+   8:				;
+   9:				;	BUGS fixed 07/07/82	JDW Software Source.
+  10:				;
+  11:				;	Unterminated IF in 'diskdef' macro itself
+  12:				;
+  13:				;	Unecessary complexity of 'lds' & 'defds' macros
+  14:				;	'lds' now does both jobs, 'defds' removed (not needed).
+  15:				;
+  16:				;
+  17:				;	'comment' dummy in 'ddw' & 'ddb' altered to 'messag'
+  18:				;	because of apparent BUG in Macro-80 ver 3.44
+  19:				;
+  20:				;	'eq' 'gt' 'ge' etc replace '=' '>' '>=' in conditionals
+  21:				;
+  22:				;
+  23:				;
+  24:				;	Now will work with Macro-80 ver 3.44 as well as MAC.
+  25:				;	if using M80, may need to alter 'set' psuedo-op
+  26:				;	to aset equivalent if inside a .z80.
+  27:				;
+  28:				;
+  29:				;
+  30:				;	CP/M logical disk drives are defined using the
+  31:				;	macros given below, where the sequence of calls
+  32:				;	is:
+  33:				;
+  34:				;	disks	n
+  35:				;	diskdef parameter-list-0
+  36:				;	diskdef parameter-list-1
+  37:				;	...
+  38:				;	diskdef parameter-list-n
+  39:				;	endef
+  40:				;
+  41:				;	where n is the number of logical disk drives attached
+  42:				;	to the CP/M system, and parameter-list-i defines the
+  43:				;	characteristics of the ith drive (i=0,1,...,n-1)
+  44:				;
+  45:				;	each parameter-list-i takes the form
+  46:				;		dn,fsc,lsc,[skf],bls,dks,dir,cks,ofs,[0]
+  47:				;	where
+  48:				;	dn	is the disk number 0,1,...,n-1
+  49:				;	fsc	is the first sector number (usually 0 or 1)
+  50:				;	lsc	is the last sector number on a track
+  51:				;	skf	is optional "skew factor" for sector translate
+  52:				;	bls	is the data block size (1024,2048,...,16384)
+  53:				;	dks	is the disk size in bls increments (word)
+  54:				;	dir	is the number of directory elements (word)
+  55:				;	cks	is the number of dir elements to checksum
+  56:				;	ofs	is the number of tracks to skip (word)
+  57:				;	[0]	is an optional 0 which forces 16K/directory entry
+  58:				;
+  59:				;	for convenience, the form
+  60:				;		dn,dm
+  61:				;	defines disk dn as having the same characteristics as
+  62:				;	a previously defined disk dm.
+  63:				;
+  64:				;	a standard four drive CP/M system is defined by
+  65:				;		disks	4
+  66:				;		diskdef 0,1,26,6,1024,243,64,64,2
+  67:				;	dsk	set	0
+  68:				;		rept	3
+  69:				;	dsk	set	dsk+1
+  70:				;		diskdef %dsk,0
+  71:				;		endm
+  72:				;		endef
+  73:				;
+  74:				;	the value of "begdat" at the end of assembly defines the
+  75:				;	beginning of the uninitialize ram area above the bios,
+  76:				;	while the value of "enddat" defines the next location
+  77:				;	following the end of the data area.  the size of this
+  78:				;	area is given by the value of "datsiz" at the end of the
+  79:				;	assembly.  note that the allocation vector will be quite
+  80:				;	large if a large disk size is defined with a small block
+  81:				;	size.
+  82:				;
+  83:				dskhdr	macro	dn
+  84:				;;	define a single disk header list
+  85:				dpe&dn: dw	xlt&dn,0000h	;translate table
+  86:					dw	0000h,0000h	;scratch area
+  87:					dw	dirbuf,dpb&dn	;dir buff,parm block
+  88:					dw	csv&dn,alv&dn	;check, alloc vectors
+  89:					endm
+  90:				;
+  91:				disks	macro	nd
+  92:				;;	define nd disks
+  93:				ndisks	set	nd	;;for later reference
+  94:				dpbase	equ	$	;base of disk parameter blocks
+  95:				;;	generate the nd elements
+  96:				dsknxt	set	0
+  97:					rept	nd
+  98:					dskhdr	%dsknxt
+  99:				dsknxt	set	dsknxt+1
+ 100:					endm
+ 101:					endm
+ 102:				;
+ 103:				dpbhdr	macro	dn
+ 104:				dpb&dn	equ	$		;disk parm block
+ 105:					endm
+ 106:				;
+ 107:				ddb	macro	data,messag
+ 108:				;;	define a db statement
+ 109:					db	data		messag
+ 110:					endm
+ 111:				;
+ 112:				ddw	macro	data,messag
+ 113:				;;	define a dw statement
+ 114:					dw	data		messag
+ 115:					endm
+ 116:				;
+ 117:				gcd	macro	m,n
+ 118:				;;	greatest common divisor of m,n
+ 119:				;;	produces value gcdn as result
+ 120:				;;	(used in sector translate table generation)
+ 121:				gcdm	set	m	;;variable for m
+ 122:				gcdn	set	n	;;variable for n
+ 123:				gcdr	set	0	;;variable for r
+ 124:					rept	65535
+ 125:				gcdx	set	gcdm/gcdn
+ 126:				gcdr	set	gcdm - gcdx*gcdn
+ 127:					if	gcdr eq 0
+ 128:					exitm
+ 129:					endif
+ 130:				gcdm	set	gcdn
+ 131:				gcdn	set	gcdr
+ 132:					endm
+ 133:					endm
+ 134:				;
+ 135:				diskdef macro	dn,fsc,lsc,skf,bls,dks,dir,cks,ofs,k16
+ 136:				;;	generate the set statements for later tables
+ 137:					if	nul lsc
+ 138:				;;	current disk dn same as previous fsc
+ 139:				dpb&dn	equ	dpb&fsc ;equivalent parameters
+ 140:				als&dn	equ	als&fsc ;same allocation vector size
+ 141:				css&dn	equ	css&fsc ;same checksum vector size
+ 142:				xlt&dn	equ	xlt&fsc ;same translate table
+ 143:					else
+ 144:				secmax	set	lsc-(fsc)	;;sectors 0...secmax
+ 145:				sectors set	secmax+1;;number of sectors
+ 146:				als&dn	set	(dks)/8 ;;size of allocation vector
+ 147:					if	((dks) mod 8) ne 0
+ 148:				als&dn	set	als&dn+1
+ 149:					endif
+ 150:				css&dn	set	(cks)/4 ;;number of checksum elements
+ 151:				;;	generate the block shift value
+ 152:				blkval	set	bls/128 ;;number of sectors/block
+ 153:				blkshf	set	0	;;counts right 0's in blkval
+ 154:				blkmsk	set	0	;;fills with 1's from right
+ 155:					rept	16	;;once for each bit position
+ 156:					if	blkval eq 1
+ 157:					exitm
+ 158:					endif
+ 159:				;;	otherwise, high order 1 not found yet
+ 160:				blkshf	set	blkshf+1
+ 161:				blkmsk	set	(blkmsk shl 1) or 1
+ 162:				blkval	set	blkval/2
+ 163:					endm
+ 164:				;;	generate the extent mask byte
+ 165:				blkval	set	bls/1024	;;number of kilobytes/block
+ 166:				extmsk	set	0	;;fill from right with 1's
+ 167:					rept	16
+ 168:					if	blkval eq 1
+ 169:					exitm
+ 170:					endif
+ 171:				;;	otherwise more to shift
+ 172:				extmsk	set	(extmsk shl 1) or 1
+ 173:				blkval	set	blkval/2
+ 174:					endm
+ 175:				;;	may be double byte allocation
+ 176:					if	(dks) gt 256
+ 177:				extmsk	set	(extmsk shr 1)
+ 178:					endif
+ 179:				;;	may be optional [0] in last position
+ 180:					if	not nul k16
+ 181:				extmsk	set	k16
+ 182:					endif
+ 183:				;;	now generate directory reservation bit vector
+ 184:				dirrem	set	dir	;;# remaining to process
+ 185:				dirbks	set	bls/32	;;number of entries per block
+ 186:				dirblk	set	0	;;fill with 1's on each loop
+ 187:					rept	16
+ 188:					if	dirrem eq 0
+ 189:					exitm
+ 190:					endif
+ 191:				;;	not complete, iterate once again
+ 192:				;;	shift right and add 1 high order bit
+ 193:				dirblk	set	(dirblk shr 1) or 8000h
+ 194:					if	dirrem gt dirbks
+ 195:				dirrem	set	dirrem-dirbks
+ 196:					else
+ 197:				dirrem	set	0
+ 198:					endif
+ 199:					endm
+ 200:					dpbhdr	dn	;;generate equ $
+ 201:					ddw	%sectors,<;sec per track>
+ 202:					ddb	%blkshf,<;block shift>
+ 203:					ddb	%blkmsk,<;block mask>
+ 204:					ddb	%extmsk,<;extnt mask>
+ 205:					ddw	%(dks)-1,<;disk size-1>
+ 206:					ddw	%(dir)-1,<;directory max>
+ 207:					ddb	%dirblk shr 8,<;alloc0>
+ 208:					ddb	%dirblk and 0ffh,<;alloc1>
+ 209:					ddw	%(cks)/4,<;check size>
+ 210:					ddw	%ofs,<;offset>
+ 211:				;;	generate the translate table, if requested
+ 212:					if	nul skf
+ 213:				xlt&dn	equ	0		;no xlate table
+ 214:					else
+ 215:					if	skf eq 0
+ 216:				xlt&dn	equ	0		;no xlate table
+ 217:					else
+ 218:				;;	generate the translate table
+ 219:				nxtsec	set	0	;;next sector to fill
+ 220:				nxtbas	set	0	;;moves by one on overflow
+ 221:					gcd	%sectors,skf
+ 222:				;;	gcdn = gcd(sectors,skew)
+ 223:				neltst	set	sectors/gcdn
+ 224:				;;	neltst is number of elements to generate
+ 225:				;;	before we overlap previous elements
+ 226:				nelts	set	neltst	;;counter
+ 227:				xlt&dn	equ	$		;translate table
+ 228:					rept	sectors ;;once for each sector
+ 229:					if	sectors lt 256
+ 230:					ddb	%nxtsec+(fsc)
+ 231:					else
+ 232:					ddw	%nxtsec+(fsc)
+ 233:					endif
+ 234:				nxtsec	set	nxtsec+(skf)
+ 235:					if	nxtsec ge sectors
+ 236:				nxtsec	set	nxtsec-sectors
+ 237:					endif
+ 238:				nelts	set	nelts-1
+ 239:					if	nelts eq 0
+ 240:				nxtbas	set	nxtbas+1
+ 241:				nxtsec	set	nxtbas
+ 242:				nelts	set	neltst
+ 243:					endif
+ 244:					endm
+ 245:					endif	;;end of nul fac test
+ 246:					endif	;;end of nul bls test
+ 247:					endif	;; BUG for end of repeat last defn.
+ 248:					endm
+ 249:				;
+ 250:				lds	macro	lb,dn,val
+ 251:				lb&dn:	ds	val&dn
+ 252:					endm
+ 253:				;
+ 254:				endef	macro
+ 255:				;;	generate the necessary ram data areas
+ 256:				begdat	equ	$
+ 257:				dirbuf: ds	128	;directory access buffer
+ 258:				dsknxt	set	0
+ 259:					rept	ndisks	;;once for each disk
+ 260:					lds	alv,%dsknxt,als
+ 261:					lds	csv,%dsknxt,css
+ 262:				dsknxt	set	dsknxt+1
+ 263:					endm
+ 264:				enddat	equ	$
+ 265:				datsiz	equ	$-begdat
+ 266:				;;	db 0 at this point forces hex record
+ 267:					endm
+ 268:				;
+**** cbios.asm ****
+   7:				
+   8:				;	utility macro to compute sector mask
+   9:				smask	macro	hblk
+  10:				;;	compute log2(hblk), return @x as result
+  11:				;;	(2 ** @x = hblk on return)
+  12:				@y	set	hblk
+  13:				@x	set	0
+  14:				;;	count right shifts of @y until = 1
+  15:					rept	8
+  16:					if	@y = 1
+  17:					exitm
+  18:					endif
+  19:				;;	@y is not 1, shift right one position
+  20:				@y	set	@y shr 1
+  21:				@x	set	@x + 1
+  22:					endm
+  23:					endm
+  24:				
+  25:     -	0030          	msize	equ	48		;cp/m version memory size in kilobytes
+  26:				;
+  27:				;	"bias" is address offset from 3400h for memory systems
+  28:				;	than 16k (referred to as"b" throughout the text)
+  29:				;
+  30:     -	7000          	bias	equ	(msize-20)*1024
+  31:     -	A400          	ccp	equ	3400h+bias	;base of ccp
+  32:     -	AC06          	bdos	equ	ccp+806h	;base of bdos
+  33:     -	BA00          	bios	equ	ccp+1600h	;base of bios
+  34:     -	0004          	cdisk	equ	0004h		;current disk number 0=a,... l5=p
+  35:     -	0003          	iobyte	equ	0003h		;intel i/o byte
+  36:				;
+  37:     -	BA00          		org	bios		;origin of this program
+  38:     -	002C          	nsects	equ	($-ccp)/128	;warm start sector count
+  39:				
+  40:     -	0000          	buffer	equ	0
+  41:				
+  42:     -	0000          	consd	equ	buffer	; console data
+  43:     -	0008          	conss	equ	8	; console status
+  44:     -	0008          	consc	equ	8	; console control
+  45:				
+  46:     -	0001          	rxd	equ	1	; receive flag mask
+  47:     -	0002          	txd	equ	2	; transmit flag mask
+  48:     -	0004          	devack	equ	4	; device changed flag
+  49:				
+  50:     -	0008          	bs	equ	8
+  51:     -	000D          	cr	equ	13
+  52:     -	000A          	lf	equ	10
+  53:				
+  54:     -	000A          	fdcctrl	equ	0Ah	; Control port (TC)
+  55:     -	000B          	fdcdata	equ	0Bh	; Data port
+  56:     -	000C          	fdcstat	equ	0Ch	; Status port
+  57:     -	0031          	irqstat	equ	031h	; IRQ status fro FDC
+  58:				
+  59:     -	0030          	porta	equ	030h	; PORTA for keyboard
+  60:     -	0031          	portb	equ	031h	; PORTB for disk and keyboard control
+  61:     -	0032          	cmda	equ	032h	; Command for PORTA
+  62:     -	0033          	cmdb	equ	033h	; Command for PORTB
+  63:				
+  64:     -	0800          	blksiz	equ	2048		;CP/M allocation size
+  65:     -	0100          	hstsiz	equ	256		;host disk sector size
+  66:     -	0010          	hstsph	equ	16		;sectors per head
+  67:     -	0002          	hsthpc	equ	2		;heads per cylinder
+  68:     -	0020          	hstspt	equ	hstsph*hsthpc	;host disk sectors/trk
+  69:     -	0002          	hstblk	equ	hstsiz/128	;CP/M sects/host buff
+  70:     -	0040          	cpmspt	equ	hstblk*hstspt	;CP/M sectors/track
+  71:     -	0001          	secmsk	equ	hstblk-1	;sector mask
+  72:     -	BA00          		smask	hstblk		;compute sector mask
+  72:				;;	compute log2(hblk), return @x as result
+  72:				;;	(2 ** @x = hblk on return)
+  72:     -	0002          	@y	set	hstblk
+  72:     -	0000          	@x	set	0
+  72:				;;	count right shifts of @y until = 1
+  72:					rept	8
+  72:     -	0000          		if	@y = 1
+  72:					endif
+  72:				;;	@y is not 1, shift right one position
+  72:     -	0001          	@y	set	@y shr 1
+  72:     -	0001          	@x	set	@x + 1
+  72:     -	BA00          		endm
+  72:     -	0001          		if	@y = 1
+  72:					exitm
+  72:     -	BA00          		endm
+  73:     -	0001          	secshf	equ	@x		;log2(hstblk)
+  74:				;
+  75:     -	0000          	wrall:	equ	0		;write to allocated
+  76:     -	0001          	wrdir:	equ	1		;write to directory
+  77:     -	0002          	wrual:	equ	2		;write to unallocated
+  78:				
+  79:				
+  80:				;
+  81:				;	jump vector for individual subroutines
+  82:				;
+  83:    0+10	BA00  C333BA  		jmp	boot	;cold start
+  84:   10+10	BA03  C34EBA  	wboote:	jmp	wboot	;warm start
+  85:   20+10	BA06  C3AFBA  		jmp	const	;console status
+  86:   30+10	BA09  C3B1BA  		jmp	conin	;console character in
+  87:   40+10	BA0C  C3B4BA  		jmp	conout	;console character out
+  88:   50+10	BA0F  C31ABB  		jmp	list	;list character out
+  89:   60+10	BA12  C31DBB  		jmp	punch	;punch character out
+  90:   70+10	BA15  C31EBB  		jmp	reader	;reader character out
+  91:   80+10	BA18  C323BB  		jmp	home	;move head to home position
+  92:   90+10	BA1B  C334BB  		jmp	seldsk	;select disk
+  93:  100+10	BA1E  C344BB  		jmp	settrk	;set track number
+  94:  110+10	BA21  C34BBB  		jmp	setsec	;set sector number
+  95:  120+10	BA24  C350BB  		jmp	setdma	;set dma address
+  96:  130+10	BA27  C359BB  		jmp	read	;read disk
+  97:  140+10	BA2A  C36DBB  		jmp	write	;write disk
+  98:  150+10	BA2D  C31BBB  		jmp	listst	;return list status
+  99:  160+10	BA30  C356BB  		jmp	sectran	;sector translate
+ 100:				
+ 101:				
+ 102:				;
+ 103:				;	end of fixed tables
+ 104:				;
+ 105:				;	individual subroutines to perform each function
+ 106:  170+10	BA33  318DBD  	boot:	lxi	sp, stack
+ 107:  180+7	BA36  3E01    		mvi	a, 01h		;CRT is the default device
+ 108:  187+13	BA38  320300  		sta	iobyte		;clear the iobyte
+ 109:  200+4	BA3B  AF      		xra	a		;zero in the accum
+ 110:  204+13	BA3C  320400  		sta	cdisk		;select disk zero
+ 111:  217+13	BA3F  3212BE  		sta	hstact		;host buffer inactive
+ 112:  230+13	BA42  3214BE  		sta	unacnt		;clear unalloc count
+ 113:  243+10	BA45  115ABD  		lxi	d,mesg		; Signon message
+ 114:  253+17	BA48  CD4FBD  		call	print
+ 115:  270+10	BA4B  C38EBA  		jmp	gocpm		;initialize and go to cp/m
+ 116:				;
+ 117:     -	BA4E          	wboot:	;simplest case is to read the disk until all sectors loaded
+ 118:  280+10	BA4E  318000  		lxi	sp, 80h		;use space below buffer for stack
+ 119:  290+7	BA51  0E00    		mvi	c, 0		;select disk 0
+ 120:  297+17	BA53  CD34BB  		call	seldsk
+ 121:  314+17	BA56  CD23BB  		call	home		;go to track 00
+ 122:				;
+ 123:  331+7	BA59  062C    		mvi	b, nsects	;b counts * of sectors to load
+ 124:  338+7	BA5B  0E00    		mvi	c, 0		;c has the current track number
+ 125:  345+7	BA5D  1602    		mvi	d, 2		;d has the next sector to read
+ 126:				;	note that we begin by reading track 0, sector 2 since sector 1
+ 127:				;	contains the cold start loader, which is skipped in a warm start
+ 128:  352+10	BA5F  2100A4  		lxi	h, ccp		;base of cp/m (initial load point)
+ 129:  362+7	BA62  0E00    		mvi	c, 0	; start at sector 1, head 0, track 0
+ 130:  369+10	BA64  110100  		lxi	d, 1
+ 131:  379+7	BA67  065B    		mvi	b, (0FFFFh-ccp)/hstsiz
+ 132:  386+5	BA69  7B      	rdloop	mov	a, e
+ 133:  391+13	BA6A  3210BE  		sta	hstsec
+ 134:  404+5	BA6D  7A      		mov	a, d
+ 135:  409+13	BA6E  320EBE  		sta	hsttrk
+ 136:  422+7	BA71  3E00    		mvi	a, 0
+ 137:  429+13	BA73  320FBE  		sta	hsttrk+1
+ 138:  442+11	BA76  C5      		push	bc
+ 139:  453+11	BA77  D5      		push	de
+ 140:  464+17	BA78  CD85BC  		call	readhst
+ 141:  481+10	BA7B  D1      		pop	de
+ 142:  491+10	BA7C  C1      		pop	bc
+ 143:  501+5	BA7D  05      		dcr	b
+ 144:  506+10	BA7E  CA8EBA  		jz	gocpm	; Go to CP/M when done
+ 145:  516+5	BA81  1C      		inr	e
+ 146:  521+7	BA82  3E20    		mvi	a, hstspt
+ 147:  528+4	BA84  BB      		cmp	e
+ 148:  532+10	BA85  C269BA  		jnz	rdloop
+ 149:  542+7	BA88  1E00    		mvi	e, 0
+ 150:  549+5	BA8A  14      		inr	d
+ 151:  554+10	BA8B  F269BA  		jp	rdloop
+ 152:				;
+ 153:				;	end of	load operation, set parameters and go to cp/m
+ 154:     -	BA8E          	gocpm:
+ 155:  564+7	BA8E  3EC3    		mvi	a, 0c3h		;c3 is a jmp instruction
+ 156:  571+13	BA90  320000  		sta	0		;for jmp to wboot
+ 157:  584+10	BA93  2103BA  		lxi	h, wboote	;wboot entry point
+ 158:  594+16	BA96  220100  		shld	1		;set address field for jmp at 0
+ 159:				;
+ 160:  610+13	BA99  320500  		sta	5		;for jmp to bdos
+ 161:  623+10	BA9C  2106AC  		lxi	h, bdos		;bdos entry point
+ 162:  633+16	BA9F  220600  		shld	6		;address field of Jump at 5 to bdos
+ 163:				;
+ 164:  649+10	BAA2  018000  		lxi	b, 80h		;default dma address is 80h
+ 165:  659+17	BAA5  CD50BB  		call	setdma
+ 166:				;
+ 167:					;ei			;enable the interrupt system
+ 168:  676+13	BAA8  3A0400  		lda	cdisk		;get current disk number
+ 169:  689+5	BAAB  4F      		mov	c, a		;send to the ccp
+ 170:  694+10	BAAC  C300A4  		jmp	ccp		;go to cp/m for further processing
+ 171:				;
+ 172:				;
+ 173:				; I/O handlers
+ 174:				; 
+ 175:				
+ 176:				; Console status
+ 177:  704+4	BAAF  AF      	const:	xra	a
+ 178:  708+10	BAB0  C9      		ret
+ 179:				
+ 180:				; Console in
+ 181:     -	BAB1          	conin	jr	conin
+ 181:     -	BAB1  18FE    		DB	18H,conin-$-1
+ 181:     -	BAB3          		ENDM
+ 182:  718+10	BAB3  C9      		ret
+ 183:				
+ 184:				; Console out
+ 185:  728+7	BAB4  3E0D    	conout	mvi	a, cr
+ 186:  735+4	BAB6  B9      		cmp	c
+ 187:     -	BAB7          		jrz	concr
+ 187:     -	BAB7  2828    		DB	28H,concr-$-1
+ 187:     -	BAB9          		ENDM
+ 188:  739+7	BAB9  3E0A    		mvi	a, lf
+ 189:  746+4	BABB  B9      		cmp	c
+ 190:     -	BABC          		jrz	conlf
+ 190:     -	BABC  282C    		DB	28H,conlf-$-1
+ 190:     -	BABE          		ENDM
+ 191:  750+7	BABE  3E20    		mvi	a, ' '
+ 192:  757+4	BAC0  B9      		cmp	c
+ 193:     -	BAC1          		jrnz	conout1
+ 193:     -	BAC1  2002    		DB	20H,conout1-$-1
+ 193:     -	BAC3          		ENDM
+ 194:  761+7	BAC3  0E00    		mvi	c, 0		; Blank for space
+ 195:  768+11	BAC5  D5      	conout1	push	d
+ 196:  779+16	BAC6  2A21BB  		lhld	cursor
+ 197:  795+11	BAC9  E5      		push	h
+ 198:  806+10	BACA  1100E0  		lxi	d, 0E000h	; CRT base address
+ 199:  816+10	BACD  19      		dad	d
+ 200:  826+7	BACE  71      		mov	m, c
+ 201:  833+10	BACF  E1      		pop	h
+ 202:  843+10	BAD0  D1      		pop	d
+ 203:  853+5	BAD1  23      		inx	h
+ 204:  858+16	BAD2  2221BB  		shld	cursor
+ 205:  874+7	BAD5  3E50    		mvi	a, 80		; 80 columns
+ 206:  881+4	BAD7  BD      		cmp	l
+ 207:  885+5+6	BAD8  C0      		rnz
+ 208:  890+7	BAD9  2E00    		mvi	l, 0		; Newline
+ 209:  897+5	BADB  24      		inr	h
+ 210:  902+16	BADC  2221BB  		shld	cursor
+ 211:     -	BADF          		jr	scroll
+ 211:     -	BADF  1810    		DB	18H,scroll-$-1
+ 211:     -	BAE1          		ENDM
+ 212:				
+ 213:  918+16	BAE1  2A21BB  	concr:	lhld	cursor
+ 214:  934+4	BAE4  AF      		xra	a		; Move cursor to start of line
+ 215:  938+5	BAE5  6F      		mov	l, a
+ 216:  943+16	BAE6  2221BB  		shld	cursor
+ 217:  959+10	BAE9  C9      		ret
+ 218:					
+ 219:  969+16	BAEA  2A21BB  	conlf:	lhld	cursor		; Newline and scroll
+ 220:  985+5	BAED  24      		inr	h
+ 221:  990+16	BAEE  2221BB  		shld	cursor
+ 222:				
+ 223: 1006+7	BAF1  3E18    	scroll:	mvi	a, 24
+ 224: 1013+4	BAF3  BC      		cmp	h
+ 225: 1017+5+6	BAF4  D0      		rnc
+ 226:				
+ 227: 1022+7	BAF5  2617    		mvi	h, 23		; 0..22
+ 228: 1029+16	BAF7  2221BB  		shld	cursor
+ 229: 1045+7	BAFA  3EE0    		mvi	a, 0E0h
+ 230: 1052+11	BAFC  F5      	scrll:	push	a
+ 231: 1063+5	BAFD  57      		mov	d, a
+ 232: 1068+7	BAFE  1E00    		mvi	e, 0
+ 233: 1075+5	BB00  3C      		inr	a
+ 234: 1080+5	BB01  67      		mov	h, a
+ 235: 1085+7	BB02  2E00    		mvi	l, 0
+ 236: 1092+10	BB04  015000  		lxi	b, 80
+ 237:     -	BB07          		ldir
+ 237:     -	BB07  EDB0    		DB	0EDH,0B0H
+ 237:     -	BB09          		ENDM
+ 238: 1102+10	BB09  F1      		pop	a
+ 239: 1112+5	BB0A  3C      		inr	a
+ 240: 1117+7	BB0B  FEF8    		cpi	0F8h
+ 241:     -	BB0D          		jrnz	scrll
+ 241:     -	BB0D  20ED    		DB	20H,scrll-$-1
+ 241:     -	BB0F          		ENDM
+ 242:					
+ 243: 1124+4	BB0F  AF      		xra	a		; Last line blanked
+ 244: 1128+10	BB10  2100F7  		lxi	h, 0F700h
+ 245: 1138+7	BB13  0650    		mvi	b, 80
+ 246: 1145+7	BB15  77      	endlin:	mov	m, a
+ 247: 1152+5	BB16  23      		inx	h
+ 248:     -	BB17          		djnz	endlin
+ 248:     -	BB17  10FC    		DB	10H,endlin-$-1
+ 248:     -	BB19          		ENDM
+ 249: 1157+10	BB19  C9      		ret
+ 250:					
+ 251:				
+ 252:				
+ 253:				; List out
+ 254: 1167+10	BB1A  C9      	list:	ret
+ 255:				
+ 256:				; List status
+ 257: 1177+4	BB1B  AF      	listst	xra	a
+ 258: 1181+10	BB1C  C9      		ret
+ 259:				
+ 260:				; Punch out
+ 261: 1191+10	BB1D  C9      	punch	ret
+ 262:				
+ 263:				; Reader in
+ 264: 1201+7	BB1E  3E1A    	reader	mvi	a, 01Ah		; Return EOF for reader device
+ 265: 1208+10	BB20  C9      		ret
+ 266:				
+ 267:				
+ 268:     -	BB21  0000    	cursor	dw	0		; Cursor position
+ 269:				;
+ 270:				;
+ 271:				;	i/o drivers for the disk follow
+ 272:				;	for now, we will simply store the parameters away for use
+ 273:				;	in the read and write	subroutines
+ 274:				;
+ 275:					;home the selected disk
+ 276: 1218+13	BB23  3A13BE  	home:	lda	hstwrt	;check for pending write
+ 277: 1231+4	BB26  B7      		ora	a
+ 278: 1235+10	BB27  C22DBB  		jnz	homed
+ 279: 1245+13	BB2A  3212BE  		sta	hstact	;clear host active flag
+ 280: 1258+10	BB2D  010000  	homed:	lxi	b, 0
+ 281: 1268+17	BB30  CD44BB  		call	settrk
+ 282: 1285+10	BB33  C9      		ret
+ 283:				;
+ 284:     -	BB34          	seldsk:
+ 285:					;select disk
+ 286: 1295+5	BB34  79      		mov	a,c		;selected disk number
+ 287: 1300+13	BB35  3209BE  		sta	sekdsk		;seek disk number
+ 288: 1313+5	BB38  6F      		mov	l,a		;disk number to HL
+ 289: 1318+7	BB39  2600    		mvi	h,0
+ 290:					rept	4		;multiply by 16
+ 292: 1325+10	BB3B  29      		dad	h
+ 292:     -	BB3C          		endm
+ 292: 1335+10	BB3C  29      		dad	h
+ 292:     -	BB3D          		endm
+ 292: 1345+10	BB3D  29      		dad	h
+ 292:     -	BB3E          		endm
+ 292: 1355+10	BB3E  29      		dad	h
+ 292:     -	BB3F          		endm
+ 293: 1365+10	BB3F  11AABD  		lxi	d,dpbase	;base of parm block
+ 294: 1375+10	BB42  19      		dad	d		;hl=.dpb(curdsk)
+ 295: 1385+10	BB43  C9      		ret
+ 296:					;
+ 297:     -	BB44          	settrk:	;set track given by register bc
+ 298:					;mov	h,b
+ 299: 1395+7	BB44  2600    		mvi	h,0
+ 300: 1402+5	BB46  69      		mov	l,c
+ 301: 1407+16	BB47  220ABE  		shld	sektrk
+ 302: 1423+10	BB4A  C9      		ret
+ 303:				;
+ 304:     -	BB4B          	setsec:
+ 305:					;set sector given by register c 
+ 306: 1433+5	BB4B  79      		mov	a,c
+ 307: 1438+13	BB4C  320CBE  		sta	seksec		;sector to seek
+ 308:					;jmp	phex
+ 309: 1451+10	BB4F  C9      		ret
+ 310:				
+ 311:     -	BB50          	setdma:
+ 312:					;set dma address given by BC
+ 313: 1461+5	BB50  60      		mov	h,b
+ 314: 1466+5	BB51  69      		mov	l,c
+ 315: 1471+16	BB52  221DBE  		shld	dmaadr
+ 316: 1487+10	BB55  C9      		ret
+ 317:				;
+ 318:     -	BB56          	sectran:
+ 319:					;translate sector number BC
+ 320: 1497+5	BB56  60      		mov	h,b
+ 321: 1502+5	BB57  69      		mov	l,c
+ 322: 1507+10	BB58  C9      		ret
+ 323:				;
+ 324:				;*****************************************************
+ 325:				;*                                                   *
+ 326:				;*	The READ entry point takes the place of      *
+ 327:				;*	the previous BIOS defintion for READ.        *
+ 328:				;*                                                   *
+ 329:				;*****************************************************
+ 330:     -	BB59          	read:
+ 331:					;read the selected CP/M sector
+ 332: 1517+4	BB59  AF      		xra	a
+ 333: 1521+13	BB5A  3214BE  		sta	unacnt
+ 334: 1534+7	BB5D  3E01    		mvi	a,1
+ 335: 1541+13	BB5F  321BBE  		sta	readop		;read operation
+ 336: 1554+13	BB62  321ABE  		sta	rsflag		;must read data
+ 337: 1567+7	BB65  3E02    		mvi	a,wrual
+ 338: 1574+13	BB67  321CBE  		sta	wrtype		;treat as unalloc
+ 339: 1587+10	BB6A  C3D8BB  		jmp	rwoper		;to perform the read
+ 340:				;
+ 341:				;*****************************************************
+ 342:				;*                                                   *
+ 343:				;*	The WRITE entry point takes the place of     *
+ 344:				;*	the previous BIOS defintion for WRITE.       *
+ 345:				;*                                                   *
+ 346:				;*****************************************************
+ 347:     -	BB6D          	write:
+ 348:					;write the selected CP/M sector
+ 349: 1597+4	BB6D  AF      		xra	a		;0 to accumulator
+ 350: 1601+13	BB6E  321BBE  		sta	readop		;not a read operation
+ 351: 1614+5	BB71  79      		mov	a,c		;write type in c
+ 352: 1619+13	BB72  321CBE  		sta	wrtype
+ 353: 1632+7	BB75  FE02    		cpi	wrual		;write unallocated?
+ 354: 1639+10	BB77  C291BB  		jnz	chkuna		;check for unalloc
+ 355:				;
+ 356:				;	write to unallocated, set parameters
+ 357: 1649+7	BB7A  3E10    		mvi	a,blksiz/128	;next unalloc recs
+ 358: 1656+13	BB7C  3214BE  		sta	unacnt
+ 359: 1669+13	BB7F  3A09BE  		lda	sekdsk		;disk to seek
+ 360: 1682+13	BB82  3215BE  		sta	unadsk		;unadsk = sekdsk
+ 361: 1695+16	BB85  2A0ABE  		lhld	sektrk
+ 362: 1711+16	BB88  2216BE  		shld	unatrk		;unatrk = sectrk
+ 363: 1727+13	BB8B  3A0CBE  		lda	seksec
+ 364: 1740+13	BB8E  3218BE  		sta	unasec		;unasec = seksec
+ 365:				;
+ 366:     -	BB91          	chkuna:
+ 367:					;check for write to unallocated sector
+ 368: 1753+13	BB91  3A14BE  		lda	unacnt		;any unalloc remain?
+ 369: 1766+4	BB94  B7      		ora	a
+ 370: 1770+10	BB95  CAD0BB  		jz	alloc		;skip if not
+ 371:				;
+ 372:				;	more unallocated records remain
+ 373: 1780+5	BB98  3D      		dcr	a		;unacnt = unacnt-1
+ 374: 1785+13	BB99  3214BE  		sta	unacnt
+ 375: 1798+13	BB9C  3A09BE  		lda	sekdsk		;same disk?
+ 376: 1811+10	BB9F  2115BE  		lxi	h,unadsk
+ 377: 1821+7	BBA2  BE      		cmp	m		;sekdsk = unadsk?
+ 378: 1828+10	BBA3  C2D0BB  		jnz	alloc		;skip if not
+ 379:				;
+ 380:				;	disks are the same
+ 381: 1838+10	BBA6  2116BE  		lxi	h,unatrk
+ 382: 1848+17	BBA9  CD73BC  		call	sektrkcmp	;sektrk = unatrk?
+ 383: 1865+10	BBAC  C2D0BB  		jnz	alloc		;skip if not
+ 384:				;
+ 385:				;	tracks are the same
+ 386: 1875+13	BBAF  3A0CBE  		lda	seksec		;same sector?
+ 387: 1888+10	BBB2  2118BE  		lxi	h,unasec
+ 388: 1898+7	BBB5  BE      		cmp	m		;seksec = unasec?
+ 389: 1905+10	BBB6  C2D0BB  		jnz	alloc		;skip if not
+ 390:				;
+ 391:				;	match, move to next sector for future ref
+ 392: 1915+10	BBB9  34      		inr	m		;unasec = unasec+1
+ 393: 1925+7	BBBA  7E      		mov	a,m		;end of track?
+ 394: 1932+7	BBBB  FE40    		cmp	cpmspt		;count CP/M sectors
+ 395: 1939+10	BBBD  DAC9BB  		jc	noovf		;skip if no overflow
+ 396:				;
+ 397:				;	overflow to next track
+ 398: 1949+10	BBC0  3600    		mvi	m,0		;unasec = 0
+ 399: 1959+16	BBC2  2A16BE  		lhld	unatrk
+ 400: 1975+5	BBC5  23      		inx	h
+ 401: 1980+16	BBC6  2216BE  		shld	unatrk		;unatrk = unatrk+1
+ 402:				;
+ 403:     -	BBC9          	noovf:
+ 404:					;match found, mark as unnecessary read
+ 405: 1996+4	BBC9  AF      		xra	a		;0 to accumulator
+ 406: 2000+13	BBCA  321ABE  		sta	rsflag		;rsflag = 0
+ 407: 2013+10	BBCD  C3D8BB  		jmp	rwoper		;to perform the write
+ 408:				;
+ 409:     -	BBD0          	alloc:
+ 410:					;not an unallocated record, requires pre-read
+ 411: 2023+4	BBD0  AF      		xra	a		;0 to accum
+ 412: 2027+13	BBD1  3214BE  		sta	unacnt		;unacnt = 0
+ 413: 2040+5	BBD4  3C      		inr	a		;1 to accum
+ 414: 2045+13	BBD5  321ABE  		sta	rsflag		;rsflag = 1
+ 415:				;
+ 416:				;*****************************************************
+ 417:				;*                                                   *
+ 418:				;*	Common code for READ and WRITE follows       *
+ 419:				;*                                                   *
+ 420:				;*****************************************************
+ 421:     -	BBD8          	rwoper:
+ 422:					;enter here to perform the read/write
+ 423: 2058+4	BBD8  AF      		xra	a		;zero to accum
+ 424: 2062+13	BBD9  3219BE  		sta	erflag		;no errors (yet)
+ 425: 2075+13	BBDC  3A0CBE  		lda	seksec		;compute host sector
+ 426:					rept	secshf
+ 429: 2088+4	BBDF  B7      		ora	a		;carry = 0
+ 429: 2092+4	BBE0  1F      		rar			;shift right
+ 429:     -	BBE1          		endm
+ 430: 2096+13	BBE1  3211BE  		sta	sekhst		;host sector to seek
+ 431:				;
+ 432:				;	active host sector?
+ 433: 2109+10	BBE4  2112BE  		lxi	h,hstact	;host active flag
+ 434: 2119+7	BBE7  7E      		mov	a,m
+ 435: 2126+10	BBE8  3601    		mvi	m,1		;always becomes 1
+ 436: 2136+4	BBEA  B7      		ora	a		;was it already?
+ 437: 2140+10	BBEB  CA12BC  		jz	filhst		;fill host if not
+ 438:				;
+ 439:				;	host buffer active, same as seek buffer?
+ 440: 2150+13	BBEE  3A09BE  		lda	sekdsk
+ 441: 2163+10	BBF1  210DBE  		lxi	h,hstdsk	;same disk?
+ 442: 2173+7	BBF4  BE      		cmp	m		;sekdsk = hstdsk?
+ 443: 2180+10	BBF5  C20BBC  		jnz	nomatch
+ 444:				;
+ 445:				;	same disk, same track?
+ 446: 2190+10	BBF8  210EBE  		lxi	h,hsttrk
+ 447: 2200+17	BBFB  CD73BC  		call	sektrkcmp	;sektrk = hsttrk?
+ 448: 2217+10	BBFE  C20BBC  		jnz	nomatch
+ 449:				;
+ 450:				;	same disk, same track, same buffer?
+ 451: 2227+13	BC01  3A11BE  		lda	sekhst
+ 452: 2240+10	BC04  2110BE  		lxi	h,hstsec	;sekhst = hstsec?
+ 453: 2250+7	BC07  BE      		cmp	m
+ 454: 2257+10	BC08  CA2FBC  		jz	match		;skip if match
+ 455:				;
+ 456:     -	BC0B          	nomatch:
+ 457:					;proper disk, but not correct sector
+ 458: 2267+13	BC0B  3A13BE  		lda	hstwrt		;host written?
+ 459: 2280+4	BC0E  B7      		ora	a
+ 460: 2284+11+6	BC0F  C47FBC  		cnz	writehst	;clear host buff
+ 461:				;
+ 462:     -	BC12          	filhst:
+ 463:					;may have to fill the host buffer
+ 464: 2295+13	BC12  3A09BE  		lda	sekdsk
+ 465: 2308+13	BC15  320DBE  		sta	hstdsk
+ 466: 2321+16	BC18  2A0ABE  		lhld	sektrk
+ 467: 2337+16	BC1B  220EBE  		shld	hsttrk
+ 468: 2353+13	BC1E  3A11BE  		lda	sekhst
+ 469: 2366+13	BC21  3210BE  		sta	hstsec
+ 470: 2379+13	BC24  3A1ABE  		lda	rsflag		;need to read?
+ 471: 2392+4	BC27  B7      		ora	a
+ 472: 2396+11+6	BC28  C485BC  		cnz	readhst		;yes, if 1
+ 473: 2407+4	BC2B  AF      		xra	a		;0 to accum
+ 474: 2411+13	BC2C  3213BE  		sta	hstwrt		;no pending write
+ 475:				;
+ 476:     -	BC2F          	match:
+ 477:					;copy data to or from buffer
+ 478: 2424+13	BC2F  3A0CBE  		lda	seksec		;mask buffer number
+ 479: 2437+7	BC32  E601    		ani	secmsk		;least signif bits
+ 480: 2444+5	BC34  6F      		mov	l,a		;ready to shift
+ 481: 2449+7	BC35  2600    		mvi	h,0		;double count
+ 482:					rept	7		;shift left 7
+ 484: 2456+10	BC37  29      		dad	h
+ 484:     -	BC38          		endm
+ 484: 2466+10	BC38  29      		dad	h
+ 484:     -	BC39          		endm
+ 484: 2476+10	BC39  29      		dad	h
+ 484:     -	BC3A          		endm
+ 484: 2486+10	BC3A  29      		dad	h
+ 484:     -	BC3B          		endm
+ 484: 2496+10	BC3B  29      		dad	h
+ 484:     -	BC3C          		endm
+ 484: 2506+10	BC3C  29      		dad	h
+ 484:     -	BC3D          		endm
+ 484: 2516+10	BC3D  29      		dad	h
+ 484:     -	BC3E          		endm
+ 485:				;	hl has relative host buffer address
+ 486: 2526+10	BC3E  111FBE  		lxi	d,hstbuf
+ 487: 2536+10	BC41  19      		dad	d		;hl = host address
+ 488: 2546+4	BC42  EB      		xchg			;now in DE
+ 489: 2550+16	BC43  2A1DBE  		lhld	dmaadr		;get/put CP/M data
+ 490: 2566+7	BC46  0E80    		mvi	c,128		;length of move
+ 491: 2573+13	BC48  3A1BBE  		lda	readop		;which way?
+ 492: 2586+4	BC4B  B7      		ora	a
+ 493: 2590+10	BC4C  C255BC  		jnz	rwmove		;skip if read
+ 494:				;
+ 495:				;	write operation, mark and switch direction
+ 496: 2600+7	BC4F  3E01    		mvi	a,1
+ 497: 2607+13	BC51  3213BE  		sta	hstwrt		;hstwrt = 1
+ 498: 2620+4	BC54  EB      		xchg			;source/dest swap
+ 499:				;
+ 500:     -	BC55          	rwmove:
+ 501:					;C initially 128, DE is source, HL is dest
+ 502: 2624+7	BC55  1A      		ldax	d		;source character
+ 503: 2631+5	BC56  13      		inx	d
+ 504: 2636+7	BC57  77      		mov	m,a		;to dest
+ 505: 2643+5	BC58  23      		inx	h
+ 506: 2648+5	BC59  0D      		dcr	c		;loop 128 times
+ 507: 2653+10	BC5A  C255BC  		jnz	rwmove
+ 508:				;
+ 509:				;	data has been moved to/from host buffer
+ 510: 2663+13	BC5D  3A1CBE  		lda	wrtype		;write type
+ 511: 2676+7	BC60  FE01    		cpi	wrdir		;to directory?
+ 512: 2683+13	BC62  3A19BE  		lda	erflag		;in case of errors
+ 513: 2696+5+6	BC65  C0      		rnz			;no further processing
+ 514:				;
+ 515:				;	clear host buffer for directory write
+ 516: 2701+4	BC66  B7      		ora	a		;errors?
+ 517: 2705+5+6	BC67  C0      		rnz			;skip if so
+ 518: 2710+4	BC68  AF      		xra	a		;0 to accum
+ 519: 2714+13	BC69  3213BE  		sta	hstwrt		;buffer written
+ 520: 2727+17	BC6C  CD7FBC  		call	writehst
+ 521: 2744+13	BC6F  3A19BE  		lda	erflag
+ 522: 2757+10	BC72  C9      		ret
+ 523:				;
+ 524:				;*****************************************************
+ 525:				;*                                                   *
+ 526:				;*	Utility subroutine for 16-bit compare        *
+ 527:				;*                                                   *
+ 528:				;*****************************************************
+ 529:     -	BC73          	sektrkcmp:
+ 530:					;HL = .unatrk or .hsttrk, compare with sektrk
+ 531: 2767+4	BC73  EB      		xchg
+ 532: 2771+10	BC74  210ABE  		lxi	h,sektrk
+ 533: 2781+7	BC77  1A      		ldax	d		;low byte compare
+ 534: 2788+7	BC78  BE      		cmp	m		;same?
+ 535: 2795+5+6	BC79  C0      		rnz			;return if not
+ 536:				;	low bytes equal, test high 1s
+ 537: 2800+5	BC7A  13      		inx	d
+ 538: 2805+5	BC7B  23      		inx	h
+ 539: 2810+7	BC7C  1A      		ldax	d
+ 540: 2817+7	BC7D  BE      		cmp	m	;sets flags
+ 541: 2824+10	BC7E  C9      		ret
+ 542:				;
+ 543:				;*****************************************************
+ 544:				;*                                                   *
+ 545:				;*	WRITEHST performs the physical write to      *
+ 546:				;*	the host disk, READHST reads the physical    *
+ 547:				;*	disk.					     *
+ 548:				;*                                                   *
+ 549:				;*****************************************************
+ 550:     -	BC7F          	writehst:
+ 551:					;hstdsk = host disk #, hsttrk = host track #,
+ 552:					;hstsec = host sect #. write "hstsiz" bytes
+ 553:					;from hstbuf and return error flag in erflag.
+ 554:					;return erflag non-zero if error
+ 555: 2834+7	BC7F  F6FF    		ora	0FFh
+ 556: 2841+13	BC81  3219BE  		sta	erflag
+ 557: 2854+10	BC84  C9      		ret
+ 558:				
+ 559:				;
+ 560:     -	BC85          	readhst:
+ 561:					;hstdsk = host disk #, hsttrk = host track #,
+ 562:					;hstsec = host sect #. read "hstsiz" bytes
+ 563:					;into hstbuf and return error flag in erflag.
+ 564:					;lxi	d, crlf
+ 565:					;call	print
+ 566:				
+ 567: 2864+17	BC85  CDCBBC  		call	seektrk
+ 568:					
+ 569: 2881+17	BC88  CD28BD  		call	fdcwait
+ 570: 2898+7	BC8B  3E46    		mvi	a, 046h		; Read sector MFM
+ 571: 2905+17	BC8D  CD33BD  		call	fdcio
+ 572: 2922+17	BC90  CDEABC  		call	dchrn		; Drive C H R N
+ 573:				
+ 574:					; Main read loop
+ 575: 2939+10	BC93  010B00  		lxi	b, fdcdata	; B = 0 C = port
+ 576: 2949+10	BC96  211FBE  		lxi	h, hstbuf
+ 577: 2959+10	BC99  DB31    	readl:	in	irqstat
+ 578: 2969+4	BC9B  87      		add	a
+ 579:     -	BC9C          		jrc	fdcret
+ 579:     -	BC9C  380A    		DB	38H,fdcret-$-1
+ 579:     -	BC9E          		ENDM
+ 580: 2973+10	BC9E  F299BC  		jp	p,readl
+ 581:     -	BCA1          		ini
+ 581:     -	BCA1  EDA2    		DB	0EDH,0A2H
+ 581:     -	BCA3          		ENDM
+ 582:     -	BCA3          		jrnz	readl
+ 582:     -	BCA3  20F4    		DB	20H,readl-$-1
+ 582:     -	BCA5          		ENDM
+ 583: 2983+17	BCA5  CD46BD  		call	fdctc		; Send TC
+ 584:				
+ 585: 3000+17	BCA8  CD33BD  	fdcret	call	fdcio
+ 586: 3017+7	BCAB  E6D8    		ani	0D8h		; Interested in bits 7,6,4,3
+ 587: 3024+5	BCAD  47      		mov	b, a
+ 588: 3029+17	BCAE  CD33BD  		call	fdcio		; ST1
+ 589: 3046+4	BCB1  B0      		ora	b
+ 590: 3050+5	BCB2  47      		mov	b, a
+ 591: 3055+17	BCB3  CD33BD  		call	fdcio		; ST2
+ 592: 3072+7	BCB6  E63F    		ani	03Fh		; Interested in bits 5..0
+ 593: 3079+4	BCB8  B0      		ora	b
+ 594: 3083+5	BCB9  47      		mov	b, a
+ 595:					
+ 596: 3088+17	BCBA  CD33BD  		call	fdcio		; C
+ 597: 3105+17	BCBD  CD33BD  		call	fdcio		; H
+ 598: 3122+17	BCC0  CD33BD  		call	fdcio		; R
+ 599: 3139+17	BCC3  CD33BD  		call	fdcio		; N
+ 600:					
+ 601: 3156+5	BCC6  78      		mov	a, b
+ 602: 3161+13	BCC7  3219BE  		sta	erflag
+ 603: 3174+10	BCCA  C9      		ret	
+ 604:				
+ 605:				
+ 606:     -	BCCB          	seektrk:
+ 607: 3184+17	BCCB  CD28BD  		call	fdcwait
+ 608: 3201+7	BCCE  3E0F    		mvi	a, 00Fh		; SEEK
+ 609: 3208+17	BCD0  CD33BD  		call	fdcio
+ 610: 3225+13	BCD3  3A0DBE  		lda	hstdsk		; Current disk
+ 611: 3238+5	BCD6  47      		mov	b, a
+ 612: 3243+13	BCD7  3A0EBE  		lda	hsttrk
+ 613: 3256+7	BCDA  E620    		ani	020h		; high byte of 0..31 is side
+ 614: 3263+4	BCDC  1F      		rar			; Move bit D4 to D2
+ 615: 3267+4	BCDD  1F      		rar
+ 616: 3271+4	BCDE  1F      		rar
+ 617: 3275+4	BCDF  B0      		ora	a, b
+ 618: 3279+17	BCE0  CD33BD  		call	fdcio
+ 619: 3296+13	BCE3  3A0EBE  		lda	hsttrk		; Current track
+ 620: 3309+17	BCE6  CD33BD  		call	fdcio
+ 621: 3326+10	BCE9  C9      		ret
+ 622:				
+ 623: 3336+13	BCEA  3A0DBE  	dchrn:	lda	hstdsk		; Disk 1..2
+ 624: 3349+5	BCED  47      		mov	b, a
+ 625: 3354+13	BCEE  3A10BE  		lda	hstsec
+ 626: 3367+4	BCF1  1F      		rar			; Move bit D4 to D2
+ 627: 3371+4	BCF2  1F      		rar
+ 628: 3375+7	BCF3  E604    		ani	004h
+ 629: 3382+4	BCF5  B0      		ora	a, b
+ 630: 3386+17	BCF6  CD33BD  		call	fdcio
+ 631:					
+ 632: 3403+13	BCF9  3A0EBE  		lda	hsttrk		; Cylinder
+ 633: 3416+17	BCFC  CD33BD  		call	fdcio
+ 634:					
+ 635: 3433+13	BCFF  3A10BE  		lda	hstsec
+ 636: 3446+4	BD02  1F      		rar			; D4 to D0
+ 637: 3450+4	BD03  1F      		rar
+ 638: 3454+4	BD04  1F      		rar
+ 639: 3458+4	BD05  1F      		rar
+ 640: 3462+7	BD06  E601    		ani	1
+ 641: 3469+17	BD08  CD33BD  		call	fdcio
+ 642:					
+ 643: 3486+13	BD0B  3A10BE  		lda	hstsec		; Record
+ 644: 3499+7	BD0E  E60F    		ani	00Fh		; 
+ 645: 3506+5	BD10  3C      		inr	a		; 1..16
+ 646: 3511+17	BD11  CD33BD  		call	fdcio
+ 647:					
+ 648: 3528+7	BD14  3E01    		mvi	a, 1		; 256 bytes per sector
+ 649: 3535+17	BD16  CD33BD  		call	fdcio
+ 650:					
+ 651: 3552+7	BD19  3E10    		mvi	a, 16		; EOT
+ 652: 3559+17	BD1B  CD33BD  		call	fdcio
+ 653:					
+ 654: 3576+7	BD1E  3E18    		mvi	a, 018h		; Gap Length
+ 655: 3583+17	BD20  CD33BD  		call	fdcio
+ 656:					
+ 657: 3600+4	BD23  AF      		xra	a		; DTL
+ 658: 3604+17	BD24  CD33BD  		call	fdcio
+ 659: 3621+10	BD27  C9      		ret
+ 660:					
+ 661:				
+ 662:     -	BD28          	fdcwait:
+ 663: 3631+10	BD28  DB0C    		in	fdcstat
+ 664: 3641+7	BD2A  E6C0    		and	0C0h
+ 665: 3648+7	BD2C  FE80    		cpi	080h
+ 666: 3655+5+6	BD2E  C8      		rz
+ 667: 3660+10	BD2F  DB0B    		in	fdcdata
+ 668:     -	BD31          		jr	fdcwait
+ 668:     -	BD31  18F5    		DB	18H,fdcwait-$-1
+ 668:     -	BD33          		ENDM
+ 669:				
+ 670:     -	BD33          	fdcio:
+ 671: 3670+11	BD33  F5      		push	psw
+ 672: 3681+10	BD34  DB0C    	fdcwl1:	in	fdcstat
+ 673:     -	BD36          		bit	7,a
+ 673:     -	BD36  CB7F    		DB	0CBH,7*8+a+40H
+ 673:     -	BD38          		ENDM
+ 674:     -	BD38          		jrz	fdcwl1
+ 674:     -	BD38  28FA    		DB	28H,fdcwl1-$-1
+ 674:     -	BD3A          		ENDM
+ 675:     -	BD3A          		bit	6,a
+ 675:     -	BD3A  CB77    		DB	0CBH,6*8+a+40H
+ 675:     -	BD3C          		ENDM
+ 676:     -	BD3C          		jrnz	fdcio1
+ 676:     -	BD3C  2004    		DB	20H,fdcio1-$-1
+ 676:     -	BD3E          		ENDM
+ 677: 3691+10	BD3E  F1      		pop	psw
+ 678: 3701+10	BD3F  D30B    		out	fdcdata
+ 679:					;jmp	phex
+ 680: 3711+10	BD41  C9      		ret
+ 681:					
+ 682: 3721+10	BD42  F1      	fdcio1:	pop	psw
+ 683: 3731+10	BD43  DB0B    		in	fdcdata
+ 684:					;push	psw
+ 685:					;call	phex
+ 686:					;pop	psw
+ 687: 3741+10	BD45  C9      		ret
+ 688:					
+ 689: 3751+7	BD46  3E10    	fdctc:	mvi	a, 010h		; Send TC
+ 690: 3758+10	BD48  D30A    		out	fdcctrl
+ 691: 3768+7	BD4A  3E00    		mvi	a, 0
+ 692: 3775+10	BD4C  D30A    		out	fdcctrl
+ 693: 3785+10	BD4E  C9      		ret
+ 694:				
+ 695:					; Print the message at HL
+ 696: 3795+7	BD4F  1A      	print	ldax	d
+ 697: 3802+5	BD50  4F      		mov	c, a
+ 698: 3807+5	BD51  13      		inx	d
+ 699: 3812+4	BD52  B7      		ora	a
+ 700: 3816+5+6	BD53  C8      		rz
+ 701: 3821+17	BD54  CDB4BA  		call	conout
+ 702: 3838+10	BD57  C34FBD  		jmp	print
+ 703:				
+ 704:     -	BD5A  34386B20	mesg	db	"48k CP/M 2.2"
+	              43502F4D
+	              20322E32
+ 705:     -	BD66  0D0A00  	crlf	db	cr,lf,0
+ 706:				
+ 707:				
+ 708:     -	BD69  00000000		dw	0,0,0,0,0,0
+	              00000000
+	              00000000
+ 709:     -	BD75  00000000		dw	0,0,0,0,0,0
+	              00000000
+	              00000000
+ 710:     -	BD81  00000000		dw	0,0,0,0,0,0
+	              00000000
+	              00000000
+ 711:     -	BD8D          	stack:
+ 712:				
+ 713: 3848+11	BD8D  F5      	phex	push	psw
+ 714: 3859+7	BD8E  0E20    		mvi	c, ' '
+ 715: 3866+17	BD90  CDB4BA  		call	conout
+ 716: 3883+10	BD93  F1      		pop	psw
+ 717: 3893+11	BD94  F5      		push	psw		; Will use A twice
+ 718: 3904+4	BD95  1F      		rar			; Shift upper to lower nibble
+ 719: 3908+4	BD96  1F      		rar
+ 720: 3912+4	BD97  1F      		rar
+ 721: 3916+4	BD98  1F      		rar
+ 722: 3920+17	BD99  CD9DBD  		call	phex1		; Print it
+ 723: 3937+10	BD9C  F1      		pop	psw		; Restore original Acc
+ 724: 3947+7	BD9D  E60F    	phex1	ani	00Fh		; Mask off high nibble
+ 725: 3954+7	BD9F  C690    		adi	090h		; Decimal adjust for ASCII
+ 726: 3961+4	BDA1  27      		daa
+ 727: 3965+7	BDA2  CE40    		aci	040h
+ 728: 3972+4	BDA4  27      		daa
+ 729: 3976+5	BDA5  4F      		mov	c, a		; Print it
+ 730: 3981+10	BDA6  C3B4BA  		jmp	conout
+ 731: 3991+10	BDA9  C9      		ret
+ 732:					
+ 733:     -	BDAA          		disks	1
+ 733:				;;	define nd disks
+ 733:     -	0001          	ndisks	set	1	;;for later reference
+ 733:     -	BDAA          	dpbase	equ	$	;base of disk parameter blocks
+ 733:				;;	generate the nd elements
+ 733:     -	0000          	dsknxt	set	0
+ 733:					rept	1
+ 733:     -	BDAA          		dskhdr	%dsknxt
+ 733:				;;	define a single disk header list
+ 733:     -	BDAA  C9BD0000	dpe0: dw	xlt0,0000h	;translate table
+ 733:     -	BDAE  00000000		dw	0000h,0000h	;scratch area
+ 733:     -	BDB2  1FBFBABD		dw	dirbuf,dpb0	;dir buff,parm block
+ 733:     -	BDB6  B0BF9FBF		dw	csv0,alv0	;check, alloc vectors
+ 733:     -	BDBA          		endm
+ 733:     -	0001          	dsknxt	set	dsknxt+1
+ 733:     -	BDBA          		endm
+ 733:     -	BDBA          		endm
+ 734:					;      dn,fsc,   lsc,[skf],bls   ,dks,dir,cks,ofs,[0]
+ 735:     -	BDBA          		diskdef 0,  1,cpmspt,1    ,blksiz,135,128,128,1
+ 735:				;;	generate the set statements for later tables
+ 735:     -	0000          		if	nul cpmspt
+ 735:					else
+ 735:     -	003F          	secmax	set	cpmspt-(1)	;;sectors 0...secmax
+ 735:     -	0040          	sectors set	secmax+1;;number of sectors
+ 735:     -	0010          	als0	set	(135)/8 ;;size of allocation vector
+ 735:     -	0001          		if	((135) mod 8) ne 0
+ 735:     -	0011          	als0	set	als0+1
+ 735:					endif
+ 735:     -	0020          	css0	set	(128)/4 ;;number of checksum elements
+ 735:				;;	generate the block shift value
+ 735:     -	0010          	blkval	set	blksiz/128 ;;number of sectors/block
+ 735:     -	0000          	blkshf	set	0	;;counts right 0's in blkval
+ 735:     -	0000          	blkmsk	set	0	;;fills with 1's from right
+ 735:					rept	16	;;once for each bit position
+ 735:     -	0000          		if	blkval eq 1
+ 735:					endif
+ 735:				;;	otherwise, high order 1 not found yet
+ 735:     -	0001          	blkshf	set	blkshf+1
+ 735:     -	0001          	blkmsk	set	(blkmsk shl 1) or 1
+ 735:     -	0008          	blkval	set	blkval/2
+ 735:     -	BDBA          		endm
+ 735:     -	0000          		if	blkval eq 1
+ 735:					endif
+ 735:				;;	otherwise, high order 1 not found yet
+ 735:     -	0002          	blkshf	set	blkshf+1
+ 735:     -	0003          	blkmsk	set	(blkmsk shl 1) or 1
+ 735:     -	0004          	blkval	set	blkval/2
+ 735:     -	BDBA          		endm
+ 735:     -	0000          		if	blkval eq 1
+ 735:					endif
+ 735:				;;	otherwise, high order 1 not found yet
+ 735:     -	0003          	blkshf	set	blkshf+1
+ 735:     -	0007          	blkmsk	set	(blkmsk shl 1) or 1
+ 735:     -	0002          	blkval	set	blkval/2
+ 735:     -	BDBA          		endm
+ 735:     -	0000          		if	blkval eq 1
+ 735:					endif
+ 735:				;;	otherwise, high order 1 not found yet
+ 735:     -	0004          	blkshf	set	blkshf+1
+ 735:     -	000F          	blkmsk	set	(blkmsk shl 1) or 1
+ 735:     -	0001          	blkval	set	blkval/2
+ 735:     -	BDBA          		endm
+ 735:     -	0001          		if	blkval eq 1
+ 735:					exitm
+ 735:				;;	generate the extent mask byte
+ 735:     -	0002          	blkval	set	blksiz/1024	;;number of kilobytes/block
+ 735:     -	0000          	extmsk	set	0	;;fill from right with 1's
+ 735:					rept	16
+ 735:     -	0000          		if	blkval eq 1
+ 735:					endif
+ 735:				;;	otherwise more to shift
+ 735:     -	0001          	extmsk	set	(extmsk shl 1) or 1
+ 735:     -	0001          	blkval	set	blkval/2
+ 735:     -	BDBA          		endm
+ 735:     -	0001          		if	blkval eq 1
+ 735:					exitm
+ 735:				;;	may be double byte allocation
+ 735:     -	0000          		if	(135) gt 256
+ 735:					endif
+ 735:				;;	may be optional [0] in last position
+ 735:     -	0000          		if	not nul 
+ 735:					endif
+ 735:				;;	now generate directory reservation bit vector
+ 735:     -	0080          	dirrem	set	128	;;# remaining to process
+ 735:     -	0040          	dirbks	set	blksiz/32	;;number of entries per block
+ 735:     -	0000          	dirblk	set	0	;;fill with 1's on each loop
+ 735:					rept	16
+ 735:     -	0000          		if	dirrem eq 0
+ 735:					endif
+ 735:				;;	not complete, iterate once again
+ 735:				;;	shift right and add 1 high order bit
+ 735:     -	8000          	dirblk	set	(dirblk shr 1) or 8000h
+ 735:     -	0001          		if	dirrem gt dirbks
+ 735:     -	0040          	dirrem	set	dirrem-dirbks
+ 735:					else
+ 735:					endif
+ 735:     -	BDBA          		endm
+ 735:     -	0000          		if	dirrem eq 0
+ 735:					endif
+ 735:				;;	not complete, iterate once again
+ 735:				;;	shift right and add 1 high order bit
+ 735:     -	C000          	dirblk	set	(dirblk shr 1) or 8000h
+ 735:     -	0000          		if	dirrem gt dirbks
+ 735:					else
+ 735:     -	0000          	dirrem	set	0
+ 735:					endif
+ 735:     -	BDBA          		endm
+ 735:     -	0001          		if	dirrem eq 0
+ 735:					exitm
+ 735:     -	BDBA          		dpbhdr	0	;;generate equ $
+ 735:     -	BDBA          	dpb0	equ	$		;disk parm block
+ 735:     -	BDBA          		endm
+ 735:     -	BDBA          		ddw	%sectors,<;sec per track>
+ 735:				;;	define a dw statement
+ 735:     -	BDBA  4000    		dw	64		;sec per track
+ 735:     -	BDBC          		endm
+ 735:     -	BDBC          		ddb	%blkshf,<;block shift>
+ 735:				;;	define a db statement
+ 735:     -	BDBC  04      		db	4		;block shift
+ 735:     -	BDBD          		endm
+ 735:     -	BDBD          		ddb	%blkmsk,<;block mask>
+ 735:				;;	define a db statement
+ 735:     -	BDBD  0F      		db	15		;block mask
+ 735:     -	BDBE          		endm
+ 735:     -	BDBE          		ddb	%extmsk,<;extnt mask>
+ 735:				;;	define a db statement
+ 735:     -	BDBE  01      		db	1		;extnt mask
+ 735:     -	BDBF          		endm
+ 735:     -	BDBF          		ddw	%(135)-1,<;disk size-1>
+ 735:				;;	define a dw statement
+ 735:     -	BDBF  8600    		dw	134		;disk size-1
+ 735:     -	BDC1          		endm
+ 735:     -	BDC1          		ddw	%(128)-1,<;directory max>
+ 735:				;;	define a dw statement
+ 735:     -	BDC1  7F00    		dw	127		;directory max
+ 735:     -	BDC3          		endm
+ 735:     -	BDC3          		ddb	%dirblk shr 8,<;alloc0>
+ 735:				;;	define a db statement
+ 735:     -	BDC3  C0      		db	192		;alloc0
+ 735:     -	BDC4          		endm
+ 735:     -	BDC4          		ddb	%dirblk and 0ffh,<;alloc1>
+ 735:				;;	define a db statement
+ 735:     -	BDC4  00      		db	0		;alloc1
+ 735:     -	BDC5          		endm
+ 735:     -	BDC5          		ddw	%(128)/4,<;check size>
+ 735:				;;	define a dw statement
+ 735:     -	BDC5  2000    		dw	32		;check size
+ 735:     -	BDC7          		endm
+ 735:     -	BDC7          		ddw	%1,<;offset>
+ 735:				;;	define a dw statement
+ 735:     -	BDC7  0100    		dw	1		;offset
+ 735:     -	BDC9          		endm
+ 735:				;;	generate the translate table, if requested
+ 735:     -	0000          		if	nul 1
+ 735:					else
+ 735:     -	0000          		if	1 eq 0
+ 735:					else
+ 735:				;;	generate the translate table
+ 735:     -	0000          	nxtsec	set	0	;;next sector to fill
+ 735:     -	0000          	nxtbas	set	0	;;moves by one on overflow
+ 735:     -	BDC9          		gcd	%sectors,1
+ 735:				;;	greatest common divisor of m,n
+ 735:				;;	produces value gcdn as result
+ 735:				;;	(used in sector translate table generation)
+ 735:     -	0040          	gcdm	set	64	;;variable for m
+ 735:     -	0001          	gcdn	set	1	;;variable for n
+ 735:     -	0000          	gcdr	set	0	;;variable for r
+ 735:					rept	65535
+ 735:     -	0040          	gcdx	set	gcdm/gcdn
+ 735:     -	0000          	gcdr	set	gcdm - gcdx*gcdn
+ 735:     -	0001          		if	gcdr eq 0
+ 735:					exitm
+ 735:     -	BDC9          		endm
+ 735:				;;	gcdn = gcd(sectors,skew)
+ 735:     -	0040          	neltst	set	sectors/gcdn
+ 735:				;;	neltst is number of elements to generate
+ 735:				;;	before we overlap previous elements
+ 735:     -	0040          	nelts	set	neltst	;;counter
+ 735:     -	BDC9          	xlt0	equ	$		;translate table
+ 735:					rept	sectors ;;once for each sector
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDC9          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDC9  01      		db	1		
+ 735:     -	BDCA          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0001          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	003F          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDCA          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDCA          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDCA  02      		db	2		
+ 735:     -	BDCB          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0002          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	003E          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDCB          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDCB          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDCB  03      		db	3		
+ 735:     -	BDCC          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0003          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	003D          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDCC          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDCC          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDCC  04      		db	4		
+ 735:     -	BDCD          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0004          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	003C          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDCD          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDCD          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDCD  05      		db	5		
+ 735:     -	BDCE          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0005          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	003B          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDCE          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDCE          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDCE  06      		db	6		
+ 735:     -	BDCF          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0006          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	003A          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDCF          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDCF          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDCF  07      		db	7		
+ 735:     -	BDD0          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0007          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0039          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD0          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD0          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD0  08      		db	8		
+ 735:     -	BDD1          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0008          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0038          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD1          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD1          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD1  09      		db	9		
+ 735:     -	BDD2          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0009          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0037          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD2          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD2          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD2  0A      		db	10		
+ 735:     -	BDD3          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	000A          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0036          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD3          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD3          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD3  0B      		db	11		
+ 735:     -	BDD4          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	000B          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0035          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD4          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD4          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD4  0C      		db	12		
+ 735:     -	BDD5          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	000C          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0034          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD5          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD5          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD5  0D      		db	13		
+ 735:     -	BDD6          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	000D          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0033          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD6          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD6          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD6  0E      		db	14		
+ 735:     -	BDD7          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	000E          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0032          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD7          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD7          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD7  0F      		db	15		
+ 735:     -	BDD8          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	000F          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0031          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD8          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD8          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD8  10      		db	16		
+ 735:     -	BDD9          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0010          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0030          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDD9          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDD9          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDD9  11      		db	17		
+ 735:     -	BDDA          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0011          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	002F          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDDA          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDDA          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDDA  12      		db	18		
+ 735:     -	BDDB          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0012          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	002E          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDDB          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDDB          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDDB  13      		db	19		
+ 735:     -	BDDC          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0013          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	002D          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDDC          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDDC          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDDC  14      		db	20		
+ 735:     -	BDDD          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0014          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	002C          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDDD          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDDD          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDDD  15      		db	21		
+ 735:     -	BDDE          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0015          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	002B          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDDE          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDDE          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDDE  16      		db	22		
+ 735:     -	BDDF          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0016          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	002A          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDDF          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDDF          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDDF  17      		db	23		
+ 735:     -	BDE0          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0017          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0029          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE0          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE0          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE0  18      		db	24		
+ 735:     -	BDE1          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0018          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0028          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE1          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE1          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE1  19      		db	25		
+ 735:     -	BDE2          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0019          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0027          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE2          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE2          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE2  1A      		db	26		
+ 735:     -	BDE3          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	001A          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0026          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE3          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE3          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE3  1B      		db	27		
+ 735:     -	BDE4          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	001B          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0025          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE4          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE4          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE4  1C      		db	28		
+ 735:     -	BDE5          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	001C          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0024          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE5          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE5          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE5  1D      		db	29		
+ 735:     -	BDE6          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	001D          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0023          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE6          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE6          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE6  1E      		db	30		
+ 735:     -	BDE7          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	001E          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0022          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE7          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE7          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE7  1F      		db	31		
+ 735:     -	BDE8          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	001F          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0021          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE8          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE8          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE8  20      		db	32		
+ 735:     -	BDE9          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0020          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0020          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDE9          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDE9          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDE9  21      		db	33		
+ 735:     -	BDEA          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0021          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	001F          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDEA          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDEA          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDEA  22      		db	34		
+ 735:     -	BDEB          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0022          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	001E          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDEB          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDEB          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDEB  23      		db	35		
+ 735:     -	BDEC          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0023          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	001D          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDEC          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDEC          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDEC  24      		db	36		
+ 735:     -	BDED          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0024          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	001C          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDED          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDED          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDED  25      		db	37		
+ 735:     -	BDEE          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0025          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	001B          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDEE          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDEE          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDEE  26      		db	38		
+ 735:     -	BDEF          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0026          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	001A          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDEF          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDEF          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDEF  27      		db	39		
+ 735:     -	BDF0          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0027          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0019          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF0          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF0          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF0  28      		db	40		
+ 735:     -	BDF1          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0028          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0018          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF1          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF1          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF1  29      		db	41		
+ 735:     -	BDF2          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0029          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0017          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF2          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF2          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF2  2A      		db	42		
+ 735:     -	BDF3          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	002A          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0016          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF3          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF3          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF3  2B      		db	43		
+ 735:     -	BDF4          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	002B          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0015          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF4          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF4          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF4  2C      		db	44		
+ 735:     -	BDF5          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	002C          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0014          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF5          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF5          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF5  2D      		db	45		
+ 735:     -	BDF6          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	002D          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0013          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF6          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF6          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF6  2E      		db	46		
+ 735:     -	BDF7          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	002E          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0012          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF7          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF7          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF7  2F      		db	47		
+ 735:     -	BDF8          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	002F          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0011          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF8          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF8          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF8  30      		db	48		
+ 735:     -	BDF9          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0030          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0010          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDF9          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDF9          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDF9  31      		db	49		
+ 735:     -	BDFA          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0031          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	000F          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDFA          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDFA          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDFA  32      		db	50		
+ 735:     -	BDFB          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0032          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	000E          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDFB          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDFB          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDFB  33      		db	51		
+ 735:     -	BDFC          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0033          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	000D          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDFC          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDFC          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDFC  34      		db	52		
+ 735:     -	BDFD          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0034          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	000C          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDFD          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDFD          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDFD  35      		db	53		
+ 735:     -	BDFE          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0035          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	000B          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDFE          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDFE          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDFE  36      		db	54		
+ 735:     -	BDFF          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0036          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	000A          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BDFF          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BDFF          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BDFF  37      		db	55		
+ 735:     -	BE00          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0037          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0009          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE00          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE00          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE00  38      		db	56		
+ 735:     -	BE01          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0038          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0008          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE01          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE01          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE01  39      		db	57		
+ 735:     -	BE02          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0039          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0007          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE02          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE02          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE02  3A      		db	58		
+ 735:     -	BE03          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	003A          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0006          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE03          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE03          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE03  3B      		db	59		
+ 735:     -	BE04          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	003B          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0005          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE04          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE04          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE04  3C      		db	60		
+ 735:     -	BE05          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	003C          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0004          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE05          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE05          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE05  3D      		db	61		
+ 735:     -	BE06          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	003D          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0003          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE06          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE06          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE06  3E      		db	62		
+ 735:     -	BE07          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	003E          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0002          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE07          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE07          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE07  3F      		db	63		
+ 735:     -	BE08          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	003F          	nxtsec	set	nxtsec+(1)
+ 735:     -	0000          		if	nxtsec ge sectors
+ 735:					endif
+ 735:     -	0001          	nelts	set	nelts-1
+ 735:     -	0000          		if	nelts eq 0
+ 735:					endif
+ 735:     -	BE08          		endm
+ 735:     -	0001          		if	sectors lt 256
+ 735:     -	BE08          		ddb	%nxtsec+(1)
+ 735:				;;	define a db statement
+ 735:     -	BE08  40      		db	64		
+ 735:     -	BE09          		endm
+ 735:					else
+ 735:					endif
+ 735:     -	0040          	nxtsec	set	nxtsec+(1)
+ 735:     -	0001          		if	nxtsec ge sectors
+ 735:     -	0000          	nxtsec	set	nxtsec-sectors
+ 735:					endif
+ 735:     -	0000          	nelts	set	nelts-1
+ 735:     -	0001          		if	nelts eq 0
+ 735:     -	0001          	nxtbas	set	nxtbas+1
+ 735:     -	0001          	nxtsec	set	nxtbas
+ 735:     -	0040          	nelts	set	neltst
+ 735:					endif
+ 735:     -	BE09          		endm
+ 735:					endif	;;end of nul fac test
+ 735:					endif	;;end of nul bls test
+ 735:					endif	;; BUG for end of repeat last defn.
+ 735:     -	BE09          		endm
+ 736:				;
+ 737:				;	the remainder of the cbios is reserved uninitialized
+ 738:				;	data area, and does not need to be a Part of the
+ 739:				;	system	memory image (the space must be available,
+ 740:				;	however, between"begdat" and"enddat").
+ 741:				;
+ 742:     -	BE09          	sekdsk:	ds	1		;seek disk number
+ 743:     -	BE0A          	sektrk:	ds	2		;seek track number
+ 744:     -	BE0C          	seksec:	ds	1		;seek sector number
+ 745:				;
+ 746:     -	BE0D          	hstdsk:	ds	1		;host disk number
+ 747:     -	BE0E          	hsttrk:	ds	2		;host track number
+ 748:     -	BE10          	hstsec:	ds	1		;host sector number
+ 749:				;
+ 750:     -	BE11          	sekhst:	ds	1		;seek shr secshf
+ 751:     -	BE12          	hstact:	ds	1		;host active flag
+ 752:     -	BE13          	hstwrt:	ds	1		;host written flag
+ 753:				;
+ 754:     -	BE14          	unacnt:	ds	1		;unalloc rec cnt
+ 755:     -	BE15          	unadsk:	ds	1		;last unalloc disk
+ 756:     -	BE16          	unatrk:	ds	2		;last unalloc track
+ 757:     -	BE18          	unasec:	ds	1		;last unalloc sector
+ 758:				;
+ 759:     -	BE19          	erflag:	ds	1		;error reporting
+ 760:     -	BE1A          	rsflag:	ds	1		;read sector flag
+ 761:     -	BE1B          	readop:	ds	1		;1 if read operation
+ 762:     -	BE1C          	wrtype:	ds	1		;write operation type
+ 763:     -	BE1D          	dmaadr:	ds	2		;last dma address
+ 764:     -	BE1F          	hstbuf:	ds	hstsiz		;host buffer
+ 765:     -	BF1F          		endef
+ 765:				;;	generate the necessary ram data areas
+ 765:     -	BF1F          	begdat	equ	$
+ 765:     -	BF1F          	dirbuf: ds	128	;directory access buffer
+ 765:     -	0000          	dsknxt	set	0
+ 765:					rept	ndisks	;;once for each disk
+ 765:     -	BF9F          		lds	alv,%dsknxt,als
+ 765:     -	BF9F          	alv0:	ds	als0
+ 765:     -	BFB0          		endm
+ 765:     -	BFB0          		lds	csv,%dsknxt,css
+ 765:     -	BFB0          	csv0:	ds	css0
+ 765:     -	BFD0          		endm
+ 765:     -	0001          	dsknxt	set	dsknxt+1
+ 765:     -	BFD0          		endm
+ 765:     -	BFD0          	enddat	equ	$
+ 765:     -	00B1          	datsiz	equ	$-begdat
+ 765:				;;	db 0 at this point forces hex record
+ 765:     -	BFD0          		endm
+ 766:					
+ 767:					rept	(0C1C0h - $)
+ 769:     -	BFD0  00      		db	0
+ 769:     -	BFD1          		endm
+ 769:     -	BFD1  00      		db	0
+ 769:     -	BFD2          		endm
+ 769:     -	BFD2  00      		db	0
+ 769:     -	BFD3          		endm
+ 769:     -	BFD3  00      		db	0
+ 769:     -	BFD4          		endm
+ 769:     -	BFD4  00      		db	0
+ 769:     -	BFD5          		endm
+ 769:     -	BFD5  00      		db	0
+ 769:     -	BFD6          		endm
+ 769:     -	BFD6  00      		db	0
+ 769:     -	BFD7          		endm
+ 769:     -	BFD7  00      		db	0
+ 769:     -	BFD8          		endm
+ 769:     -	BFD8  00      		db	0
+ 769:     -	BFD9          		endm
+ 769:     -	BFD9  00      		db	0
+ 769:     -	BFDA          		endm
+ 769:     -	BFDA  00      		db	0
+ 769:     -	BFDB          		endm
+ 769:     -	BFDB  00      		db	0
+ 769:     -	BFDC          		endm
+ 769:     -	BFDC  00      		db	0
+ 769:     -	BFDD          		endm
+ 769:     -	BFDD  00      		db	0
+ 769:     -	BFDE          		endm
+ 769:     -	BFDE  00      		db	0
+ 769:     -	BFDF          		endm
+ 769:     -	BFDF  00      		db	0
+ 769:     -	BFE0          		endm
+ 769:     -	BFE0  00      		db	0
+ 769:     -	BFE1          		endm
+ 769:     -	BFE1  00      		db	0
+ 769:     -	BFE2          		endm
+ 769:     -	BFE2  00      		db	0
+ 769:     -	BFE3          		endm
+ 769:     -	BFE3  00      		db	0
+ 769:     -	BFE4          		endm
+ 769:     -	BFE4  00      		db	0
+ 769:     -	BFE5          		endm
+ 769:     -	BFE5  00      		db	0
+ 769:     -	BFE6          		endm
+ 769:     -	BFE6  00      		db	0
+ 769:     -	BFE7          		endm
+ 769:     -	BFE7  00      		db	0
+ 769:     -	BFE8          		endm
+ 769:     -	BFE8  00      		db	0
+ 769:     -	BFE9          		endm
+ 769:     -	BFE9  00      		db	0
+ 769:     -	BFEA          		endm
+ 769:     -	BFEA  00      		db	0
+ 769:     -	BFEB          		endm
+ 769:     -	BFEB  00      		db	0
+ 769:     -	BFEC          		endm
+ 769:     -	BFEC  00      		db	0
+ 769:     -	BFED          		endm
+ 769:     -	BFED  00      		db	0
+ 769:     -	BFEE          		endm
+ 769:     -	BFEE  00      		db	0
+ 769:     -	BFEF          		endm
+ 769:     -	BFEF  00      		db	0
+ 769:     -	BFF0          		endm
+ 769:     -	BFF0  00      		db	0
+ 769:     -	BFF1          		endm
+ 769:     -	BFF1  00      		db	0
+ 769:     -	BFF2          		endm
+ 769:     -	BFF2  00      		db	0
+ 769:     -	BFF3          		endm
+ 769:     -	BFF3  00      		db	0
+ 769:     -	BFF4          		endm
+ 769:     -	BFF4  00      		db	0
+ 769:     -	BFF5          		endm
+ 769:     -	BFF5  00      		db	0
+ 769:     -	BFF6          		endm
+ 769:     -	BFF6  00      		db	0
+ 769:     -	BFF7          		endm
+ 769:     -	BFF7  00      		db	0
+ 769:     -	BFF8          		endm
+ 769:     -	BFF8  00      		db	0
+ 769:     -	BFF9          		endm
+ 769:     -	BFF9  00      		db	0
+ 769:     -	BFFA          		endm
+ 769:     -	BFFA  00      		db	0
+ 769:     -	BFFB          		endm
+ 769:     -	BFFB  00      		db	0
+ 769:     -	BFFC          		endm
+ 769:     -	BFFC  00      		db	0
+ 769:     -	BFFD          		endm
+ 769:     -	BFFD  00      		db	0
+ 769:     -	BFFE          		endm
+ 769:     -	BFFE  00      		db	0
+ 769:     -	BFFF          		endm
+ 769:     -	BFFF  00      		db	0
+ 769:     -	C000          		endm
+ 769:     -	C000  00      		db	0
+ 769:     -	C001          		endm
+ 769:     -	C001  00      		db	0
+ 769:     -	C002          		endm
+ 769:     -	C002  00      		db	0
+ 769:     -	C003          		endm
+ 769:     -	C003  00      		db	0
+ 769:     -	C004          		endm
+ 769:     -	C004  00      		db	0
+ 769:     -	C005          		endm
+ 769:     -	C005  00      		db	0
+ 769:     -	C006          		endm
+ 769:     -	C006  00      		db	0
+ 769:     -	C007          		endm
+ 769:     -	C007  00      		db	0
+ 769:     -	C008          		endm
+ 769:     -	C008  00      		db	0
+ 769:     -	C009          		endm
+ 769:     -	C009  00      		db	0
+ 769:     -	C00A          		endm
+ 769:     -	C00A  00      		db	0
+ 769:     -	C00B          		endm
+ 769:     -	C00B  00      		db	0
+ 769:     -	C00C          		endm
+ 769:     -	C00C  00      		db	0
+ 769:     -	C00D          		endm
+ 769:     -	C00D  00      		db	0
+ 769:     -	C00E          		endm
+ 769:     -	C00E  00      		db	0
+ 769:     -	C00F          		endm
+ 769:     -	C00F  00      		db	0
+ 769:     -	C010          		endm
+ 769:     -	C010  00      		db	0
+ 769:     -	C011          		endm
+ 769:     -	C011  00      		db	0
+ 769:     -	C012          		endm
+ 769:     -	C012  00      		db	0
+ 769:     -	C013          		endm
+ 769:     -	C013  00      		db	0
+ 769:     -	C014          		endm
+ 769:     -	C014  00      		db	0
+ 769:     -	C015          		endm
+ 769:     -	C015  00      		db	0
+ 769:     -	C016          		endm
+ 769:     -	C016  00      		db	0
+ 769:     -	C017          		endm
+ 769:     -	C017  00      		db	0
+ 769:     -	C018          		endm
+ 769:     -	C018  00      		db	0
+ 769:     -	C019          		endm
+ 769:     -	C019  00      		db	0
+ 769:     -	C01A          		endm
+ 769:     -	C01A  00      		db	0
+ 769:     -	C01B          		endm
+ 769:     -	C01B  00      		db	0
+ 769:     -	C01C          		endm
+ 769:     -	C01C  00      		db	0
+ 769:     -	C01D          		endm
+ 769:     -	C01D  00      		db	0
+ 769:     -	C01E          		endm
+ 769:     -	C01E  00      		db	0
+ 769:     -	C01F          		endm
+ 769:     -	C01F  00      		db	0
+ 769:     -	C020          		endm
+ 769:     -	C020  00      		db	0
+ 769:     -	C021          		endm
+ 769:     -	C021  00      		db	0
+ 769:     -	C022          		endm
+ 769:     -	C022  00      		db	0
+ 769:     -	C023          		endm
+ 769:     -	C023  00      		db	0
+ 769:     -	C024          		endm
+ 769:     -	C024  00      		db	0
+ 769:     -	C025          		endm
+ 769:     -	C025  00      		db	0
+ 769:     -	C026          		endm
+ 769:     -	C026  00      		db	0
+ 769:     -	C027          		endm
+ 769:     -	C027  00      		db	0
+ 769:     -	C028          		endm
+ 769:     -	C028  00      		db	0
+ 769:     -	C029          		endm
+ 769:     -	C029  00      		db	0
+ 769:     -	C02A          		endm
+ 769:     -	C02A  00      		db	0
+ 769:     -	C02B          		endm
+ 769:     -	C02B  00      		db	0
+ 769:     -	C02C          		endm
+ 769:     -	C02C  00      		db	0
+ 769:     -	C02D          		endm
+ 769:     -	C02D  00      		db	0
+ 769:     -	C02E          		endm
+ 769:     -	C02E  00      		db	0
+ 769:     -	C02F          		endm
+ 769:     -	C02F  00      		db	0
+ 769:     -	C030          		endm
+ 769:     -	C030  00      		db	0
+ 769:     -	C031          		endm
+ 769:     -	C031  00      		db	0
+ 769:     -	C032          		endm
+ 769:     -	C032  00      		db	0
+ 769:     -	C033          		endm
+ 769:     -	C033  00      		db	0
+ 769:     -	C034          		endm
+ 769:     -	C034  00      		db	0
+ 769:     -	C035          		endm
+ 769:     -	C035  00      		db	0
+ 769:     -	C036          		endm
+ 769:     -	C036  00      		db	0
+ 769:     -	C037          		endm
+ 769:     -	C037  00      		db	0
+ 769:     -	C038          		endm
+ 769:     -	C038  00      		db	0
+ 769:     -	C039          		endm
+ 769:     -	C039  00      		db	0
+ 769:     -	C03A          		endm
+ 769:     -	C03A  00      		db	0
+ 769:     -	C03B          		endm
+ 769:     -	C03B  00      		db	0
+ 769:     -	C03C          		endm
+ 769:     -	C03C  00      		db	0
+ 769:     -	C03D          		endm
+ 769:     -	C03D  00      		db	0
+ 769:     -	C03E          		endm
+ 769:     -	C03E  00      		db	0
+ 769:     -	C03F          		endm
+ 769:     -	C03F  00      		db	0
+ 769:     -	C040          		endm
+ 769:     -	C040  00      		db	0
+ 769:     -	C041          		endm
+ 769:     -	C041  00      		db	0
+ 769:     -	C042          		endm
+ 769:     -	C042  00      		db	0
+ 769:     -	C043          		endm
+ 769:     -	C043  00      		db	0
+ 769:     -	C044          		endm
+ 769:     -	C044  00      		db	0
+ 769:     -	C045          		endm
+ 769:     -	C045  00      		db	0
+ 769:     -	C046          		endm
+ 769:     -	C046  00      		db	0
+ 769:     -	C047          		endm
+ 769:     -	C047  00      		db	0
+ 769:     -	C048          		endm
+ 769:     -	C048  00      		db	0
+ 769:     -	C049          		endm
+ 769:     -	C049  00      		db	0
+ 769:     -	C04A          		endm
+ 769:     -	C04A  00      		db	0
+ 769:     -	C04B          		endm
+ 769:     -	C04B  00      		db	0
+ 769:     -	C04C          		endm
+ 769:     -	C04C  00      		db	0
+ 769:     -	C04D          		endm
+ 769:     -	C04D  00      		db	0
+ 769:     -	C04E          		endm
+ 769:     -	C04E  00      		db	0
+ 769:     -	C04F          		endm
+ 769:     -	C04F  00      		db	0
+ 769:     -	C050          		endm
+ 769:     -	C050  00      		db	0
+ 769:     -	C051          		endm
+ 769:     -	C051  00      		db	0
+ 769:     -	C052          		endm
+ 769:     -	C052  00      		db	0
+ 769:     -	C053          		endm
+ 769:     -	C053  00      		db	0
+ 769:     -	C054          		endm
+ 769:     -	C054  00      		db	0
+ 769:     -	C055          		endm
+ 769:     -	C055  00      		db	0
+ 769:     -	C056          		endm
+ 769:     -	C056  00      		db	0
+ 769:     -	C057          		endm
+ 769:     -	C057  00      		db	0
+ 769:     -	C058          		endm
+ 769:     -	C058  00      		db	0
+ 769:     -	C059          		endm
+ 769:     -	C059  00      		db	0
+ 769:     -	C05A          		endm
+ 769:     -	C05A  00      		db	0
+ 769:     -	C05B          		endm
+ 769:     -	C05B  00      		db	0
+ 769:     -	C05C          		endm
+ 769:     -	C05C  00      		db	0
+ 769:     -	C05D          		endm
+ 769:     -	C05D  00      		db	0
+ 769:     -	C05E          		endm
+ 769:     -	C05E  00      		db	0
+ 769:     -	C05F          		endm
+ 769:     -	C05F  00      		db	0
+ 769:     -	C060          		endm
+ 769:     -	C060  00      		db	0
+ 769:     -	C061          		endm
+ 769:     -	C061  00      		db	0
+ 769:     -	C062          		endm
+ 769:     -	C062  00      		db	0
+ 769:     -	C063          		endm
+ 769:     -	C063  00      		db	0
+ 769:     -	C064          		endm
+ 769:     -	C064  00      		db	0
+ 769:     -	C065          		endm
+ 769:     -	C065  00      		db	0
+ 769:     -	C066          		endm
+ 769:     -	C066  00      		db	0
+ 769:     -	C067          		endm
+ 769:     -	C067  00      		db	0
+ 769:     -	C068          		endm
+ 769:     -	C068  00      		db	0
+ 769:     -	C069          		endm
+ 769:     -	C069  00      		db	0
+ 769:     -	C06A          		endm
+ 769:     -	C06A  00      		db	0
+ 769:     -	C06B          		endm
+ 769:     -	C06B  00      		db	0
+ 769:     -	C06C          		endm
+ 769:     -	C06C  00      		db	0
+ 769:     -	C06D          		endm
+ 769:     -	C06D  00      		db	0
+ 769:     -	C06E          		endm
+ 769:     -	C06E  00      		db	0
+ 769:     -	C06F          		endm
+ 769:     -	C06F  00      		db	0
+ 769:     -	C070          		endm
+ 769:     -	C070  00      		db	0
+ 769:     -	C071          		endm
+ 769:     -	C071  00      		db	0
+ 769:     -	C072          		endm
+ 769:     -	C072  00      		db	0
+ 769:     -	C073          		endm
+ 769:     -	C073  00      		db	0
+ 769:     -	C074          		endm
+ 769:     -	C074  00      		db	0
+ 769:     -	C075          		endm
+ 769:     -	C075  00      		db	0
+ 769:     -	C076          		endm
+ 769:     -	C076  00      		db	0
+ 769:     -	C077          		endm
+ 769:     -	C077  00      		db	0
+ 769:     -	C078          		endm
+ 769:     -	C078  00      		db	0
+ 769:     -	C079          		endm
+ 769:     -	C079  00      		db	0
+ 769:     -	C07A          		endm
+ 769:     -	C07A  00      		db	0
+ 769:     -	C07B          		endm
+ 769:     -	C07B  00      		db	0
+ 769:     -	C07C          		endm
+ 769:     -	C07C  00      		db	0
+ 769:     -	C07D          		endm
+ 769:     -	C07D  00      		db	0
+ 769:     -	C07E          		endm
+ 769:     -	C07E  00      		db	0
+ 769:     -	C07F          		endm
+ 769:     -	C07F  00      		db	0
+ 769:     -	C080          		endm
+ 769:     -	C080  00      		db	0
+ 769:     -	C081          		endm
+ 769:     -	C081  00      		db	0
+ 769:     -	C082          		endm
+ 769:     -	C082  00      		db	0
+ 769:     -	C083          		endm
+ 769:     -	C083  00      		db	0
+ 769:     -	C084          		endm
+ 769:     -	C084  00      		db	0
+ 769:     -	C085          		endm
+ 769:     -	C085  00      		db	0
+ 769:     -	C086          		endm
+ 769:     -	C086  00      		db	0
+ 769:     -	C087          		endm
+ 769:     -	C087  00      		db	0
+ 769:     -	C088          		endm
+ 769:     -	C088  00      		db	0
+ 769:     -	C089          		endm
+ 769:     -	C089  00      		db	0
+ 769:     -	C08A          		endm
+ 769:     -	C08A  00      		db	0
+ 769:     -	C08B          		endm
+ 769:     -	C08B  00      		db	0
+ 769:     -	C08C          		endm
+ 769:     -	C08C  00      		db	0
+ 769:     -	C08D          		endm
+ 769:     -	C08D  00      		db	0
+ 769:     -	C08E          		endm
+ 769:     -	C08E  00      		db	0
+ 769:     -	C08F          		endm
+ 769:     -	C08F  00      		db	0
+ 769:     -	C090          		endm
+ 769:     -	C090  00      		db	0
+ 769:     -	C091          		endm
+ 769:     -	C091  00      		db	0
+ 769:     -	C092          		endm
+ 769:     -	C092  00      		db	0
+ 769:     -	C093          		endm
+ 769:     -	C093  00      		db	0
+ 769:     -	C094          		endm
+ 769:     -	C094  00      		db	0
+ 769:     -	C095          		endm
+ 769:     -	C095  00      		db	0
+ 769:     -	C096          		endm
+ 769:     -	C096  00      		db	0
+ 769:     -	C097          		endm
+ 769:     -	C097  00      		db	0
+ 769:     -	C098          		endm
+ 769:     -	C098  00      		db	0
+ 769:     -	C099          		endm
+ 769:     -	C099  00      		db	0
+ 769:     -	C09A          		endm
+ 769:     -	C09A  00      		db	0
+ 769:     -	C09B          		endm
+ 769:     -	C09B  00      		db	0
+ 769:     -	C09C          		endm
+ 769:     -	C09C  00      		db	0
+ 769:     -	C09D          		endm
+ 769:     -	C09D  00      		db	0
+ 769:     -	C09E          		endm
+ 769:     -	C09E  00      		db	0
+ 769:     -	C09F          		endm
+ 769:     -	C09F  00      		db	0
+ 769:     -	C0A0          		endm
+ 769:     -	C0A0  00      		db	0
+ 769:     -	C0A1          		endm
+ 769:     -	C0A1  00      		db	0
+ 769:     -	C0A2          		endm
+ 769:     -	C0A2  00      		db	0
+ 769:     -	C0A3          		endm
+ 769:     -	C0A3  00      		db	0
+ 769:     -	C0A4          		endm
+ 769:     -	C0A4  00      		db	0
+ 769:     -	C0A5          		endm
+ 769:     -	C0A5  00      		db	0
+ 769:     -	C0A6          		endm
+ 769:     -	C0A6  00      		db	0
+ 769:     -	C0A7          		endm
+ 769:     -	C0A7  00      		db	0
+ 769:     -	C0A8          		endm
+ 769:     -	C0A8  00      		db	0
+ 769:     -	C0A9          		endm
+ 769:     -	C0A9  00      		db	0
+ 769:     -	C0AA          		endm
+ 769:     -	C0AA  00      		db	0
+ 769:     -	C0AB          		endm
+ 769:     -	C0AB  00      		db	0
+ 769:     -	C0AC          		endm
+ 769:     -	C0AC  00      		db	0
+ 769:     -	C0AD          		endm
+ 769:     -	C0AD  00      		db	0
+ 769:     -	C0AE          		endm
+ 769:     -	C0AE  00      		db	0
+ 769:     -	C0AF          		endm
+ 769:     -	C0AF  00      		db	0
+ 769:     -	C0B0          		endm
+ 769:     -	C0B0  00      		db	0
+ 769:     -	C0B1          		endm
+ 769:     -	C0B1  00      		db	0
+ 769:     -	C0B2          		endm
+ 769:     -	C0B2  00      		db	0
+ 769:     -	C0B3          		endm
+ 769:     -	C0B3  00      		db	0
+ 769:     -	C0B4          		endm
+ 769:     -	C0B4  00      		db	0
+ 769:     -	C0B5          		endm
+ 769:     -	C0B5  00      		db	0
+ 769:     -	C0B6          		endm
+ 769:     -	C0B6  00      		db	0
+ 769:     -	C0B7          		endm
+ 769:     -	C0B7  00      		db	0
+ 769:     -	C0B8          		endm
+ 769:     -	C0B8  00      		db	0
+ 769:     -	C0B9          		endm
+ 769:     -	C0B9  00      		db	0
+ 769:     -	C0BA          		endm
+ 769:     -	C0BA  00      		db	0
+ 769:     -	C0BB          		endm
+ 769:     -	C0BB  00      		db	0
+ 769:     -	C0BC          		endm
+ 769:     -	C0BC  00      		db	0
+ 769:     -	C0BD          		endm
+ 769:     -	C0BD  00      		db	0
+ 769:     -	C0BE          		endm
+ 769:     -	C0BE  00      		db	0
+ 769:     -	C0BF          		endm
+ 769:     -	C0BF  00      		db	0
+ 769:     -	C0C0          		endm
+ 769:     -	C0C0  00      		db	0
+ 769:     -	C0C1          		endm
+ 769:     -	C0C1  00      		db	0
+ 769:     -	C0C2          		endm
+ 769:     -	C0C2  00      		db	0
+ 769:     -	C0C3          		endm
+ 769:     -	C0C3  00      		db	0
+ 769:     -	C0C4          		endm
+ 769:     -	C0C4  00      		db	0
+ 769:     -	C0C5          		endm
+ 769:     -	C0C5  00      		db	0
+ 769:     -	C0C6          		endm
+ 769:     -	C0C6  00      		db	0
+ 769:     -	C0C7          		endm
+ 769:     -	C0C7  00      		db	0
+ 769:     -	C0C8          		endm
+ 769:     -	C0C8  00      		db	0
+ 769:     -	C0C9          		endm
+ 769:     -	C0C9  00      		db	0
+ 769:     -	C0CA          		endm
+ 769:     -	C0CA  00      		db	0
+ 769:     -	C0CB          		endm
+ 769:     -	C0CB  00      		db	0
+ 769:     -	C0CC          		endm
+ 769:     -	C0CC  00      		db	0
+ 769:     -	C0CD          		endm
+ 769:     -	C0CD  00      		db	0
+ 769:     -	C0CE          		endm
+ 769:     -	C0CE  00      		db	0
+ 769:     -	C0CF          		endm
+ 769:     -	C0CF  00      		db	0
+ 769:     -	C0D0          		endm
+ 769:     -	C0D0  00      		db	0
+ 769:     -	C0D1          		endm
+ 769:     -	C0D1  00      		db	0
+ 769:     -	C0D2          		endm
+ 769:     -	C0D2  00      		db	0
+ 769:     -	C0D3          		endm
+ 769:     -	C0D3  00      		db	0
+ 769:     -	C0D4          		endm
+ 769:     -	C0D4  00      		db	0
+ 769:     -	C0D5          		endm
+ 769:     -	C0D5  00      		db	0
+ 769:     -	C0D6          		endm
+ 769:     -	C0D6  00      		db	0
+ 769:     -	C0D7          		endm
+ 769:     -	C0D7  00      		db	0
+ 769:     -	C0D8          		endm
+ 769:     -	C0D8  00      		db	0
+ 769:     -	C0D9          		endm
+ 769:     -	C0D9  00      		db	0
+ 769:     -	C0DA          		endm
+ 769:     -	C0DA  00      		db	0
+ 769:     -	C0DB          		endm
+ 769:     -	C0DB  00      		db	0
+ 769:     -	C0DC          		endm
+ 769:     -	C0DC  00      		db	0
+ 769:     -	C0DD          		endm
+ 769:     -	C0DD  00      		db	0
+ 769:     -	C0DE          		endm
+ 769:     -	C0DE  00      		db	0
+ 769:     -	C0DF          		endm
+ 769:     -	C0DF  00      		db	0
+ 769:     -	C0E0          		endm
+ 769:     -	C0E0  00      		db	0
+ 769:     -	C0E1          		endm
+ 769:     -	C0E1  00      		db	0
+ 769:     -	C0E2          		endm
+ 769:     -	C0E2  00      		db	0
+ 769:     -	C0E3          		endm
+ 769:     -	C0E3  00      		db	0
+ 769:     -	C0E4          		endm
+ 769:     -	C0E4  00      		db	0
+ 769:     -	C0E5          		endm
+ 769:     -	C0E5  00      		db	0
+ 769:     -	C0E6          		endm
+ 769:     -	C0E6  00      		db	0
+ 769:     -	C0E7          		endm
+ 769:     -	C0E7  00      		db	0
+ 769:     -	C0E8          		endm
+ 769:     -	C0E8  00      		db	0
+ 769:     -	C0E9          		endm
+ 769:     -	C0E9  00      		db	0
+ 769:     -	C0EA          		endm
+ 769:     -	C0EA  00      		db	0
+ 769:     -	C0EB          		endm
+ 769:     -	C0EB  00      		db	0
+ 769:     -	C0EC          		endm
+ 769:     -	C0EC  00      		db	0
+ 769:     -	C0ED          		endm
+ 769:     -	C0ED  00      		db	0
+ 769:     -	C0EE          		endm
+ 769:     -	C0EE  00      		db	0
+ 769:     -	C0EF          		endm
+ 769:     -	C0EF  00      		db	0
+ 769:     -	C0F0          		endm
+ 769:     -	C0F0  00      		db	0
+ 769:     -	C0F1          		endm
+ 769:     -	C0F1  00      		db	0
+ 769:     -	C0F2          		endm
+ 769:     -	C0F2  00      		db	0
+ 769:     -	C0F3          		endm
+ 769:     -	C0F3  00      		db	0
+ 769:     -	C0F4          		endm
+ 769:     -	C0F4  00      		db	0
+ 769:     -	C0F5          		endm
+ 769:     -	C0F5  00      		db	0
+ 769:     -	C0F6          		endm
+ 769:     -	C0F6  00      		db	0
+ 769:     -	C0F7          		endm
+ 769:     -	C0F7  00      		db	0
+ 769:     -	C0F8          		endm
+ 769:     -	C0F8  00      		db	0
+ 769:     -	C0F9          		endm
+ 769:     -	C0F9  00      		db	0
+ 769:     -	C0FA          		endm
+ 769:     -	C0FA  00      		db	0
+ 769:     -	C0FB          		endm
+ 769:     -	C0FB  00      		db	0
+ 769:     -	C0FC          		endm
+ 769:     -	C0FC  00      		db	0
+ 769:     -	C0FD          		endm
+ 769:     -	C0FD  00      		db	0
+ 769:     -	C0FE          		endm
+ 769:     -	C0FE  00      		db	0
+ 769:     -	C0FF          		endm
+ 769:     -	C0FF  00      		db	0
+ 769:     -	C100          		endm
+ 769:     -	C100  00      		db	0
+ 769:     -	C101          		endm
+ 769:     -	C101  00      		db	0
+ 769:     -	C102          		endm
+ 769:     -	C102  00      		db	0
+ 769:     -	C103          		endm
+ 769:     -	C103  00      		db	0
+ 769:     -	C104          		endm
+ 769:     -	C104  00      		db	0
+ 769:     -	C105          		endm
+ 769:     -	C105  00      		db	0
+ 769:     -	C106          		endm
+ 769:     -	C106  00      		db	0
+ 769:     -	C107          		endm
+ 769:     -	C107  00      		db	0
+ 769:     -	C108          		endm
+ 769:     -	C108  00      		db	0
+ 769:     -	C109          		endm
+ 769:     -	C109  00      		db	0
+ 769:     -	C10A          		endm
+ 769:     -	C10A  00      		db	0
+ 769:     -	C10B          		endm
+ 769:     -	C10B  00      		db	0
+ 769:     -	C10C          		endm
+ 769:     -	C10C  00      		db	0
+ 769:     -	C10D          		endm
+ 769:     -	C10D  00      		db	0
+ 769:     -	C10E          		endm
+ 769:     -	C10E  00      		db	0
+ 769:     -	C10F          		endm
+ 769:     -	C10F  00      		db	0
+ 769:     -	C110          		endm
+ 769:     -	C110  00      		db	0
+ 769:     -	C111          		endm
+ 769:     -	C111  00      		db	0
+ 769:     -	C112          		endm
+ 769:     -	C112  00      		db	0
+ 769:     -	C113          		endm
+ 769:     -	C113  00      		db	0
+ 769:     -	C114          		endm
+ 769:     -	C114  00      		db	0
+ 769:     -	C115          		endm
+ 769:     -	C115  00      		db	0
+ 769:     -	C116          		endm
+ 769:     -	C116  00      		db	0
+ 769:     -	C117          		endm
+ 769:     -	C117  00      		db	0
+ 769:     -	C118          		endm
+ 769:     -	C118  00      		db	0
+ 769:     -	C119          		endm
+ 769:     -	C119  00      		db	0
+ 769:     -	C11A          		endm
+ 769:     -	C11A  00      		db	0
+ 769:     -	C11B          		endm
+ 769:     -	C11B  00      		db	0
+ 769:     -	C11C          		endm
+ 769:     -	C11C  00      		db	0
+ 769:     -	C11D          		endm
+ 769:     -	C11D  00      		db	0
+ 769:     -	C11E          		endm
+ 769:     -	C11E  00      		db	0
+ 769:     -	C11F          		endm
+ 769:     -	C11F  00      		db	0
+ 769:     -	C120          		endm
+ 769:     -	C120  00      		db	0
+ 769:     -	C121          		endm
+ 769:     -	C121  00      		db	0
+ 769:     -	C122          		endm
+ 769:     -	C122  00      		db	0
+ 769:     -	C123          		endm
+ 769:     -	C123  00      		db	0
+ 769:     -	C124          		endm
+ 769:     -	C124  00      		db	0
+ 769:     -	C125          		endm
+ 769:     -	C125  00      		db	0
+ 769:     -	C126          		endm
+ 769:     -	C126  00      		db	0
+ 769:     -	C127          		endm
+ 769:     -	C127  00      		db	0
+ 769:     -	C128          		endm
+ 769:     -	C128  00      		db	0
+ 769:     -	C129          		endm
+ 769:     -	C129  00      		db	0
+ 769:     -	C12A          		endm
+ 769:     -	C12A  00      		db	0
+ 769:     -	C12B          		endm
+ 769:     -	C12B  00      		db	0
+ 769:     -	C12C          		endm
+ 769:     -	C12C  00      		db	0
+ 769:     -	C12D          		endm
+ 769:     -	C12D  00      		db	0
+ 769:     -	C12E          		endm
+ 769:     -	C12E  00      		db	0
+ 769:     -	C12F          		endm
+ 769:     -	C12F  00      		db	0
+ 769:     -	C130          		endm
+ 769:     -	C130  00      		db	0
+ 769:     -	C131          		endm
+ 769:     -	C131  00      		db	0
+ 769:     -	C132          		endm
+ 769:     -	C132  00      		db	0
+ 769:     -	C133          		endm
+ 769:     -	C133  00      		db	0
+ 769:     -	C134          		endm
+ 769:     -	C134  00      		db	0
+ 769:     -	C135          		endm
+ 769:     -	C135  00      		db	0
+ 769:     -	C136          		endm
+ 769:     -	C136  00      		db	0
+ 769:     -	C137          		endm
+ 769:     -	C137  00      		db	0
+ 769:     -	C138          		endm
+ 769:     -	C138  00      		db	0
+ 769:     -	C139          		endm
+ 769:     -	C139  00      		db	0
+ 769:     -	C13A          		endm
+ 769:     -	C13A  00      		db	0
+ 769:     -	C13B          		endm
+ 769:     -	C13B  00      		db	0
+ 769:     -	C13C          		endm
+ 769:     -	C13C  00      		db	0
+ 769:     -	C13D          		endm
+ 769:     -	C13D  00      		db	0
+ 769:     -	C13E          		endm
+ 769:     -	C13E  00      		db	0
+ 769:     -	C13F          		endm
+ 769:     -	C13F  00      		db	0
+ 769:     -	C140          		endm
+ 769:     -	C140  00      		db	0
+ 769:     -	C141          		endm
+ 769:     -	C141  00      		db	0
+ 769:     -	C142          		endm
+ 769:     -	C142  00      		db	0
+ 769:     -	C143          		endm
+ 769:     -	C143  00      		db	0
+ 769:     -	C144          		endm
+ 769:     -	C144  00      		db	0
+ 769:     -	C145          		endm
+ 769:     -	C145  00      		db	0
+ 769:     -	C146          		endm
+ 769:     -	C146  00      		db	0
+ 769:     -	C147          		endm
+ 769:     -	C147  00      		db	0
+ 769:     -	C148          		endm
+ 769:     -	C148  00      		db	0
+ 769:     -	C149          		endm
+ 769:     -	C149  00      		db	0
+ 769:     -	C14A          		endm
+ 769:     -	C14A  00      		db	0
+ 769:     -	C14B          		endm
+ 769:     -	C14B  00      		db	0
+ 769:     -	C14C          		endm
+ 769:     -	C14C  00      		db	0
+ 769:     -	C14D          		endm
+ 769:     -	C14D  00      		db	0
+ 769:     -	C14E          		endm
+ 769:     -	C14E  00      		db	0
+ 769:     -	C14F          		endm
+ 769:     -	C14F  00      		db	0
+ 769:     -	C150          		endm
+ 769:     -	C150  00      		db	0
+ 769:     -	C151          		endm
+ 769:     -	C151  00      		db	0
+ 769:     -	C152          		endm
+ 769:     -	C152  00      		db	0
+ 769:     -	C153          		endm
+ 769:     -	C153  00      		db	0
+ 769:     -	C154          		endm
+ 769:     -	C154  00      		db	0
+ 769:     -	C155          		endm
+ 769:     -	C155  00      		db	0
+ 769:     -	C156          		endm
+ 769:     -	C156  00      		db	0
+ 769:     -	C157          		endm
+ 769:     -	C157  00      		db	0
+ 769:     -	C158          		endm
+ 769:     -	C158  00      		db	0
+ 769:     -	C159          		endm
+ 769:     -	C159  00      		db	0
+ 769:     -	C15A          		endm
+ 769:     -	C15A  00      		db	0
+ 769:     -	C15B          		endm
+ 769:     -	C15B  00      		db	0
+ 769:     -	C15C          		endm
+ 769:     -	C15C  00      		db	0
+ 769:     -	C15D          		endm
+ 769:     -	C15D  00      		db	0
+ 769:     -	C15E          		endm
+ 769:     -	C15E  00      		db	0
+ 769:     -	C15F          		endm
+ 769:     -	C15F  00      		db	0
+ 769:     -	C160          		endm
+ 769:     -	C160  00      		db	0
+ 769:     -	C161          		endm
+ 769:     -	C161  00      		db	0
+ 769:     -	C162          		endm
+ 769:     -	C162  00      		db	0
+ 769:     -	C163          		endm
+ 769:     -	C163  00      		db	0
+ 769:     -	C164          		endm
+ 769:     -	C164  00      		db	0
+ 769:     -	C165          		endm
+ 769:     -	C165  00      		db	0
+ 769:     -	C166          		endm
+ 769:     -	C166  00      		db	0
+ 769:     -	C167          		endm
+ 769:     -	C167  00      		db	0
+ 769:     -	C168          		endm
+ 769:     -	C168  00      		db	0
+ 769:     -	C169          		endm
+ 769:     -	C169  00      		db	0
+ 769:     -	C16A          		endm
+ 769:     -	C16A  00      		db	0
+ 769:     -	C16B          		endm
+ 769:     -	C16B  00      		db	0
+ 769:     -	C16C          		endm
+ 769:     -	C16C  00      		db	0
+ 769:     -	C16D          		endm
+ 769:     -	C16D  00      		db	0
+ 769:     -	C16E          		endm
+ 769:     -	C16E  00      		db	0
+ 769:     -	C16F          		endm
+ 769:     -	C16F  00      		db	0
+ 769:     -	C170          		endm
+ 769:     -	C170  00      		db	0
+ 769:     -	C171          		endm
+ 769:     -	C171  00      		db	0
+ 769:     -	C172          		endm
+ 769:     -	C172  00      		db	0
+ 769:     -	C173          		endm
+ 769:     -	C173  00      		db	0
+ 769:     -	C174          		endm
+ 769:     -	C174  00      		db	0
+ 769:     -	C175          		endm
+ 769:     -	C175  00      		db	0
+ 769:     -	C176          		endm
+ 769:     -	C176  00      		db	0
+ 769:     -	C177          		endm
+ 769:     -	C177  00      		db	0
+ 769:     -	C178          		endm
+ 769:     -	C178  00      		db	0
+ 769:     -	C179          		endm
+ 769:     -	C179  00      		db	0
+ 769:     -	C17A          		endm
+ 769:     -	C17A  00      		db	0
+ 769:     -	C17B          		endm
+ 769:     -	C17B  00      		db	0
+ 769:     -	C17C          		endm
+ 769:     -	C17C  00      		db	0
+ 769:     -	C17D          		endm
+ 769:     -	C17D  00      		db	0
+ 769:     -	C17E          		endm
+ 769:     -	C17E  00      		db	0
+ 769:     -	C17F          		endm
+ 769:     -	C17F  00      		db	0
+ 769:     -	C180          		endm
+ 769:     -	C180  00      		db	0
+ 769:     -	C181          		endm
+ 769:     -	C181  00      		db	0
+ 769:     -	C182          		endm
+ 769:     -	C182  00      		db	0
+ 769:     -	C183          		endm
+ 769:     -	C183  00      		db	0
+ 769:     -	C184          		endm
+ 769:     -	C184  00      		db	0
+ 769:     -	C185          		endm
+ 769:     -	C185  00      		db	0
+ 769:     -	C186          		endm
+ 769:     -	C186  00      		db	0
+ 769:     -	C187          		endm
+ 769:     -	C187  00      		db	0
+ 769:     -	C188          		endm
+ 769:     -	C188  00      		db	0
+ 769:     -	C189          		endm
+ 769:     -	C189  00      		db	0
+ 769:     -	C18A          		endm
+ 769:     -	C18A  00      		db	0
+ 769:     -	C18B          		endm
+ 769:     -	C18B  00      		db	0
+ 769:     -	C18C          		endm
+ 769:     -	C18C  00      		db	0
+ 769:     -	C18D          		endm
+ 769:     -	C18D  00      		db	0
+ 769:     -	C18E          		endm
+ 769:     -	C18E  00      		db	0
+ 769:     -	C18F          		endm
+ 769:     -	C18F  00      		db	0
+ 769:     -	C190          		endm
+ 769:     -	C190  00      		db	0
+ 769:     -	C191          		endm
+ 769:     -	C191  00      		db	0
+ 769:     -	C192          		endm
+ 769:     -	C192  00      		db	0
+ 769:     -	C193          		endm
+ 769:     -	C193  00      		db	0
+ 769:     -	C194          		endm
+ 769:     -	C194  00      		db	0
+ 769:     -	C195          		endm
+ 769:     -	C195  00      		db	0
+ 769:     -	C196          		endm
+ 769:     -	C196  00      		db	0
+ 769:     -	C197          		endm
+ 769:     -	C197  00      		db	0
+ 769:     -	C198          		endm
+ 769:     -	C198  00      		db	0
+ 769:     -	C199          		endm
+ 769:     -	C199  00      		db	0
+ 769:     -	C19A          		endm
+ 769:     -	C19A  00      		db	0
+ 769:     -	C19B          		endm
+ 769:     -	C19B  00      		db	0
+ 769:     -	C19C          		endm
+ 769:     -	C19C  00      		db	0
+ 769:     -	C19D          		endm
+ 769:     -	C19D  00      		db	0
+ 769:     -	C19E          		endm
+ 769:     -	C19E  00      		db	0
+ 769:     -	C19F          		endm
+ 769:     -	C19F  00      		db	0
+ 769:     -	C1A0          		endm
+ 769:     -	C1A0  00      		db	0
+ 769:     -	C1A1          		endm
+ 769:     -	C1A1  00      		db	0
+ 769:     -	C1A2          		endm
+ 769:     -	C1A2  00      		db	0
+ 769:     -	C1A3          		endm
+ 769:     -	C1A3  00      		db	0
+ 769:     -	C1A4          		endm
+ 769:     -	C1A4  00      		db	0
+ 769:     -	C1A5          		endm
+ 769:     -	C1A5  00      		db	0
+ 769:     -	C1A6          		endm
+ 769:     -	C1A6  00      		db	0
+ 769:     -	C1A7          		endm
+ 769:     -	C1A7  00      		db	0
+ 769:     -	C1A8          		endm
+ 769:     -	C1A8  00      		db	0
+ 769:     -	C1A9          		endm
+ 769:     -	C1A9  00      		db	0
+ 769:     -	C1AA          		endm
+ 769:     -	C1AA  00      		db	0
+ 769:     -	C1AB          		endm
+ 769:     -	C1AB  00      		db	0
+ 769:     -	C1AC          		endm
+ 769:     -	C1AC  00      		db	0
+ 769:     -	C1AD          		endm
+ 769:     -	C1AD  00      		db	0
+ 769:     -	C1AE          		endm
+ 769:     -	C1AE  00      		db	0
+ 769:     -	C1AF          		endm
+ 769:     -	C1AF  00      		db	0
+ 769:     -	C1B0          		endm
+ 769:     -	C1B0  00      		db	0
+ 769:     -	C1B1          		endm
+ 769:     -	C1B1  00      		db	0
+ 769:     -	C1B2          		endm
+ 769:     -	C1B2  00      		db	0
+ 769:     -	C1B3          		endm
+ 769:     -	C1B3  00      		db	0
+ 769:     -	C1B4          		endm
+ 769:     -	C1B4  00      		db	0
+ 769:     -	C1B5          		endm
+ 769:     -	C1B5  00      		db	0
+ 769:     -	C1B6          		endm
+ 769:     -	C1B6  00      		db	0
+ 769:     -	C1B7          		endm
+ 769:     -	C1B7  00      		db	0
+ 769:     -	C1B8          		endm
+ 769:     -	C1B8  00      		db	0
+ 769:     -	C1B9          		endm
+ 769:     -	C1B9  00      		db	0
+ 769:     -	C1BA          		endm
+ 769:     -	C1BA  00      		db	0
+ 769:     -	C1BB          		endm
+ 769:     -	C1BB  00      		db	0
+ 769:     -	C1BC          		endm
+ 769:     -	C1BC  00      		db	0
+ 769:     -	C1BD          		endm
+ 769:     -	C1BD  00      		db	0
+ 769:     -	C1BE          		endm
+ 769:     -	C1BE  00      		db	0
+ 769:     -	C1BF          		endm
+ 769:     -	C1BF  00      		db	0
+ 769:     -	C1C0          		endm
+ 770:					
+ 771:     -	C1C0          		end
+
+
+
+Statistics:
+
+     4	passes
+     0	jr promotions
+   149	symbols
+  1529	bytes
+
+   686	macro calls
+  8859	macro bytes
+     0	invented symbols
+
+
+
+Symbol Table:
+
+@x             =01        1
+@y             =01        1
+BC             =00        0
+DE             =02        2
+HL             =04        4
+IX             =04        4
+IY             =04        4
+alloc           BBD0      48080
+als0           =11        17
+alv0            BF9F      49055
+bdos           =AC06      44038
+begdat         =BF1F      48927
+bias           =7000      28672
+bios           =BA00      47616
+blkmsk         =0F        15
+blkshf         =04        4
+blksiz         = 800      2048
+blkval         =01        1
+boot            BA33      47667
+bs             =08        8
+buffer         =00        0
+ccp            =A400      41984
+cdisk          =04        4
+chkuna          BB91      48017
+cmda           =32        50
+cmdb           =33        51
+concr           BAE1      47841
+conin           BAB1      47793
+conlf           BAEA      47850
+conout          BAB4      47796
+conout1         BAC5      47813
+consc          =08        8
+consd          =00        0
+conss          =08        8
+const           BAAF      47791
+cpmspt         =40        64
+cr             =0D        13
+crlf            BD66      48486
+css0           =20        32
+csv0            BFB0      49072
+cursor          BB21      47905
+datsiz         =B1        177
+dchrn           BCEA      48362
+devack         =04        4
+dirbks         =40        64
+dirblk         =C000      49152
+dirbuf          BF1F      48927
+dirrem         =00        0
+dmaadr          BE1D      48669
+dpb0           =BDBA      48570
+dpbase         =BDAA      48554
+dpe0            BDAA      48554
+dsknxt         =01        1
+enddat         =BFD0      49104
+endlin          BB15      47893
+erflag          BE19      48665
+extmsk         =01        1
+fdcctrl        =0A        10
+fdcdata        =0B        11
+fdcio           BD33      48435
+fdcio1          BD42      48450
+fdcret          BCA8      48296
+fdcstat        =0C        12
+fdctc           BD46      48454
+fdcwait         BD28      48424
+fdcwl1          BD34      48436
+filhst          BC12      48146
+gcdm           =40        64
+gcdn           =01        1
+gcdr           =00        0
+gcdx           =40        64
+gocpm           BA8E      47758
+home            BB23      47907
+homed           BB2D      47917
+hstact          BE12      48658
+hstblk         =02        2
+hstbuf          BE1F      48671
+hstdsk          BE0D      48653
+hsthpc         =02        2
+hstsec          BE10      48656
+hstsiz         = 100      256
+hstsph         =10        16
+hstspt         =20        32
+hsttrk          BE0E      48654
+hstwrt          BE13      48659
+iobyte         =03        3
+irqstat        =31        49
+lf             =0A        10
+list            BB1A      47898
+listst          BB1B      47899
+match           BC2F      48175
+mesg            BD5A      48474
+msize          =30        48
+ndisks         =01        1
+nelts          =40        64
+neltst         =40        64
+nomatch         BC0B      48139
+noovf           BBC9      48073
+nsects         =2C        44
+nxtbas         =01        1
+nxtsec         =01        1
+phex            BD8D      48525
+phex1           BD9D      48541
+porta          =30        48
+portb          =31        49
+print           BD4F      48463
+punch           BB1D      47901
+rdloop          BA69      47721
+read            BB59      47961
+reader          BB1E      47902
+readhst         BC85      48261
+readl           BC99      48281
+readop          BE1B      48667
+rsflag          BE1A      48666
+rwmove          BC55      48213
+rwoper          BBD8      48088
+rxd            =01        1
+scrll           BAFC      47868
+scroll          BAF1      47857
+secmax         =3F        63
+secmsk         =01        1
+secshf         =01        1
+sectors        =40        64
+sectran         BB56      47958
+seektrk         BCCB      48331
+sekdsk          BE09      48649
+sekhst          BE11      48657
+seksec          BE0C      48652
+sektrk          BE0A      48650
+sektrkcmp       BC73      48243
+seldsk          BB34      47924
+setdma          BB50      47952
+setsec          BB4B      47947
+settrk          BB44      47940
+stack           BD8D      48525
+txd            =02        2
+unacnt          BE14      48660
+unadsk          BE15      48661
+unasec          BE18      48664
+unatrk          BE16      48662
+wboot           BA4E      47694
+wboote          BA03      47619
+wrall          =00        0
+wrdir          =01        1
+write           BB6D      47981
+writehst        BC7F      48255
+wrtype          BE1C      48668
+wrual          =02        2
+xlt0           =BDC9      48585
