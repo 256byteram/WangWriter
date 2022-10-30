@@ -427,13 +427,13 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins, const uint8_t key, uint
 	Z80PIO_SET_PA(pins, key);
 
 	// Tie Keyboard Strobe to data input write of PORTA
-	if (*keyflag && machine->keyboard_strobe)
-	{
+	if (*keyflag || machine->keyboard_strobe)
 		pins &= ~Z80PIO_ASTB;
-		*keyflag = 0;
-	}
 	else
 		pins |= Z80PIO_ASTB;
+
+	*keyflag = 0;
+
 
 	if (pins & Z80_A0) pins |= Z80PIO_BASEL;
 	if (pins & Z80_A1) pins |= Z80PIO_CDSEL;
@@ -575,7 +575,7 @@ int emulate(uint16_t origin)
 		if (event.type == SDL_QUIT) break;
 		if (event.type == SDL_KEYDOWN)
 		{
-
+/*
 			FILE *fp;
 			fp = fopen("snapshot.bin", "wb");
 			fwrite (ram, 1, 32768, fp);
@@ -585,13 +585,11 @@ int emulate(uint16_t origin)
 
 			printf ("PC = %04X A = %02X B = %02X\n", machine.cpu.pc, machine.cpu.a, machine.cpu.b);
 			fflush (stdout);
+*/
 
-
-			/*
 			key = event.key.keysym.sym;
-			if (keyflag) printf ("Keyflag 1->0\n");
 			keyflag = 1;
-			*/
+
 		}
 		//if (event.type == SDL_KEYUP) keytab[event.key.keysym.scancode] = 0;
 		if (event.type == SDL_MOUSEBUTTONDOWN)
@@ -763,7 +761,8 @@ void update_framebuffer(uint32_t *fb)
 
 int fdc_seektrack (int drive, int track, void* user_data)
 {
-	if (drive > 1) return UPD765_RESULT_NOT_READY;
+	if (drive > 1)
+		return UPD765_RESULT_NOT_READY;
 
 	diskdrive_t *disk = user_data;
 	disk->track = track;
@@ -783,7 +782,8 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 	disk->data_p = 0;
 	disk->cmd = inout_info->cmd;
 
-	if (drive > 1) return UPD765_RESULT_NOT_READY;
+	if (drive > 1)
+		return UPD765_RESULT_NOT_READY;
 
 	// No image specified
 	if (strlen(disk->image_name) == 0)

@@ -112,10 +112,12 @@ boot:	lxi	sp, stack
 	sta	unacnt		;clear unalloc count
 	lxi	d,mesg		; Signon message
 	call	print
+	call	fdcrst		;Initialise FDC
 	jmp	gocpm		;initialize and go to cp/m
 ;
 wboot:	;simplest case is to read the disk until all sectors loaded
 	lxi	sp, 80h		;use space below buffer for stack
+	call	fdcrst		;Initialise FDC
 	mvi	c, 0		;select disk 0
 	call	seldsk
 	call	home		;go to track 00
@@ -220,7 +222,7 @@ conlf:	lhld	cursor		; Newline and scroll
 	inr	h
 	shld	cursor
 
-scroll:	mvi	a, 24
+scroll:	mvi	a, 23
 	cmp	h
 	rnc
 
@@ -237,7 +239,7 @@ scrll:	push	a
 	ldir
 	pop	a
 	inr	a
-	cpi	0F8h
+	cpi	0F7h
 	jrnz	scrll
 	
 	xra	a		; Last line blanked
@@ -561,8 +563,12 @@ readhst:
 	;hstdsk = host disk #, hsttrk = host track #,
 	;hstsec = host sect #. read "hstsiz" bytes
 	;into hstbuf and return error flag in erflag.
-	;lxi	d, crlf
-	;call	print
+	lxi	d, crlf
+	call	print
+	
+	in	fdcctrl		; Motor 1 on
+	setb	2, a
+	out	fdcctrl
 
 	call	seektrk
 	
@@ -597,6 +603,10 @@ fdcret	call	fdcio
 	call	fdcio		; H
 	call	fdcio		; R
 	call	fdcio		; N
+	
+	in	fdcctrl		; Motor 1 off
+	res	2, a
+	out	fdcctrl
 	
 	mov	a, b
 	sta	erflag
@@ -657,11 +667,31 @@ dchrn:	lda	hstdsk		; Disk 1..2
 	xra	a		; DTL
 	call	fdcio
 	ret
+
+fdcrst:	mvi	a, 0FFh		; Mode 3
+	out	cmdb
+	ld	a, 0C1h		; Specify input bits
+	out	cmdb
 	
+	in	fdcctrl
+	setb	5,a		; Reset pin
+	out	fdcctrl
+	mvi	b, 0
+_fdr1:	djnz	_fdr1
+	res	5,a
+	out	fdcctrl
+_fdr2:	djnz	_fdr2
+
+	mvi	a, 03h		; Specify
+	call	fdcio
+	mvi	a, 0BFh		; Step rate, head unload time
+	call	fdcio
+	mvi	a, 010h		; Head load time
+	jmp	fdcio
 
 fdcwait:
 	in	fdcstat
-	and	0C0h
+	and	0CFh		; RQM, DIO and seek status
 	cpi	080h
 	rz
 	in	fdcdata
@@ -676,7 +706,7 @@ fdcwl1:	in	fdcstat
 	jrnz	fdcio1
 	pop	psw
 	out	fdcdata
-	;jmp	phex
+	jmp	phex
 	ret
 	
 fdcio1:	pop	psw
@@ -686,9 +716,10 @@ fdcio1:	pop	psw
 	;pop	psw
 	ret
 	
-fdctc:	mvi	a, 010h		; Send TC
+fdctc:	in	fdcctrl		; Pulse TC bit
+	setb	4, a
 	out	fdcctrl
-	mvi	a, 0
+	res	4, a
 	out	fdcctrl
 	ret
 
