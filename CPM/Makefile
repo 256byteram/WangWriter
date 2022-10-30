@@ -5,11 +5,7 @@ all: cbios.asm cpm22.asm bootsector.asm diskheader.cim
 	cat diskheader.cim bootsector.cim cpm22.cim cbios.cim > bootblock.bin
 	dd if=/dev/zero of=disk.img bs=256 count=1280
 	mkfs.cpm -f wang -b bootblock.bin disk.img
-	cpmcp -f wang disk.img ~/work/Weirdos/Zork/ZORK1.* 0:
-	cpmcp -f wang disk.img ~/work/Z80SBC/cpm22-b/*.com 0:
-	cpmcp -f wang disk.img ~/work/Weirdos/MBASIC.COM 0:
-	cpmcp -f wang disk.img ~/work/Weirdos/STARTREK.BAS 0:
-
+	cpmcp -f wang disk.img diskfiles/*.* 0:
 	
 .PHONY: clean
 
