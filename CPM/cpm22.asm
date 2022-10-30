@@ -12,7 +12,7 @@
 ;   Set memory limit here. This is the amount of contigeous
 ; ram starting from 0000. CP/M will reside at the end of this space.
 ;
-MEM	EQU	48	;for a 62k system (TS802 TEST - WORKS OK).
+MEM	EQU	47	;for a 62k system (TS802 TEST - WORKS OK).
 ;
 IOBYTE	EQU	3	;i/o definition byte.
 TDRIVE	EQU	4	;current drive name and user number.
@@ -50,8 +50,8 @@ CBASE	JMP	COMMAND		;execute command processor (ccp).
 ; (actual length), (char #1), (char #2), (char #3), etc.
 ;
 INBUFF	DB	127	;length of input buffer.
-	DB	3	;current length of contents.
-	DB	"DIR",0,0,0
+	DB	5	;current length of contents.
+	DB	"ZORK1",0
 	DB	32,32,32,32,32,32,32,32,32,32
 	DB	"Copyright"
 	DB	" 1979 (c) by Digital Research      "

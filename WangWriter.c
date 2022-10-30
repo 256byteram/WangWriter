@@ -164,7 +164,6 @@ int main(int argc, char *argv[])
 
 uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins, const uint8_t key, uint8_t *keyflag)
 {
-
 	pins = z80_tick (&machine->cpu, pins);
 
 	// This is a hack to get past the interrupt counter
@@ -261,6 +260,12 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins, const uint8_t key, uint
 			const uint8_t data = Z80_GET_DATA(pins);
 			switch (addr & 0xFF)
 			{
+				case 0:
+				{
+					printf ("%02X ", Z80_GET_DATA(pins));
+					break;
+				}
+
 				case UPPER_BANK_SEL:
 				{
 					prom_sel = data;
@@ -575,20 +580,24 @@ int emulate(uint16_t origin)
 		if (event.type == SDL_QUIT) break;
 		if (event.type == SDL_KEYDOWN)
 		{
-/*
-			FILE *fp;
-			fp = fopen("snapshot.bin", "wb");
-			fwrite (ram, 1, 32768, fp);
-			fwrite (bankram[0], 1, 16384, fp);
-			fclose (fp);
-			printf ("Snapshot of RAM written\n");
-
-			printf ("PC = %04X A = %02X B = %02X\n", machine.cpu.pc, machine.cpu.a, machine.cpu.b);
-			fflush (stdout);
-*/
-
 			key = event.key.keysym.sym;
-			keyflag = 1;
+			if (key == 0x1B)
+			{
+			/*	FILE *fp;
+				fp = fopen("snapshot.bin", "wb");
+				fwrite (ram, 1, 32768, fp);
+				fwrite (bankram[0], 1, 16384, fp);
+				fwrite (vram, 1, 16384, fp);
+				fclose (fp);
+				printf ("Snapshot of RAM written\n");
+	*/
+				printf ("PC = %04X A = %02X B = %02X SP = %04X FDCIRQ = %i\n", machine.cpu.pc, machine.cpu.a, machine.cpu.b, machine.cpu.sp, machine.fdc_irq);
+				fflush (stdout);
+			}
+			else
+			{
+				keyflag = 1;
+			}
 
 		}
 		//if (event.type == SDL_KEYUP) keytab[event.key.keysym.scancode] = 0;
@@ -782,7 +791,7 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 	disk->data_p = 0;
 	disk->cmd = inout_info->cmd;
 
-	if (drive > 1)
+	if (drive != 1)
 		return UPD765_RESULT_NOT_READY;
 
 	// No image specified
@@ -818,7 +827,7 @@ int fdc_seeksector (int drive, int side, upd765_sectorinfo_t* inout_info, void* 
 int fdc_read (int drive, int side, void* user_data, uint8_t* out_data)
 {
 	diskdrive_t *disk = user_data;
-	if (drive > 1) return UPD765_RESULT_NOT_READY;
+	if (drive != 1) return UPD765_RESULT_NOT_READY;
 
 	*out_data = disk->buffer[disk->data_p];
 	disk->data_p++;
@@ -844,7 +853,7 @@ int fdc_trackinfo (int drive, int side, void* user_data, upd765_sectorinfo_t* ou
 {
 	//diskdrive_t *disk = user_data;
 
-	if (drive > 1) return UPD765_RESULT_NOT_READY;
+	if (drive != 1) return UPD765_RESULT_NOT_READY;
 
 	out_info->st1 = 0;
 	out_info->st2 = 0;

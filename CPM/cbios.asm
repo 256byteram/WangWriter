@@ -22,7 +22,7 @@ smask	macro	hblk
 	endm
 	endm
 
-msize	equ	48		;cp/m version memory size in kilobytes
+msize	equ	47		;cp/m version memory size in kilobytes
 ;
 ;	"bias" is address offset from 3400h for memory systems
 ;	than 16k (referred to as"b" throughout the text)
@@ -36,16 +36,6 @@ iobyte	equ	0003h		;intel i/o byte
 ;
 	org	bios		;origin of this program
 nsects	equ	($-ccp)/128	;warm start sector count
-
-buffer	equ	0
-
-consd	equ	buffer	; console data
-conss	equ	8	; console status
-consc	equ	8	; console control
-
-rxd	equ	1	; receive flag mask
-txd	equ	2	; transmit flag mask
-devack	equ	4	; device changed flag
 
 bs	equ	8
 cr	equ	13
@@ -103,7 +93,8 @@ wboote:	jmp	wboot	;warm start
 ;	end of fixed tables
 ;
 ;	individual subroutines to perform each function
-boot:	lxi	sp, stack
+boot:	di
+	lxi	sp, stack
 	mvi	a, 01h		;CRT is the default device
 	sta	iobyte		;clear the iobyte
 	xra	a		;zero in the accum
@@ -116,6 +107,7 @@ boot:	lxi	sp, stack
 	jmp	gocpm		;initialize and go to cp/m
 ;
 wboot:	;simplest case is to read the disk until all sectors loaded
+	di
 	lxi	sp, 80h		;use space below buffer for stack
 	call	fdcrst		;Initialise FDC
 	mvi	c, 0		;select disk 0
@@ -153,7 +145,7 @@ rdloop	mov	a, e
 	jp	rdloop
 ;
 ;	end of	load operation, set parameters and go to cp/m
-gocpm:
+gocpm:	call	kbinit
 	mvi	a, 0c3h		;c3 is a jmp instruction
 	sta	0		;for jmp to wboot
 	lxi	h, wboote	;wboot entry point
@@ -166,7 +158,7 @@ gocpm:
 	lxi	b, 80h		;default dma address is 80h
 	call	setdma
 ;
-	;ei			;enable the interrupt system
+	ei			;enable the interrupt system
 	lda	cdisk		;get current disk number
 	mov	c, a		;send to the ccp
 	jmp	ccp		;go to cp/m for further processing
@@ -176,11 +168,31 @@ gocpm:
 ; 
 
 ; Console status
-const:	xra	a
+const:	lda	inptr		; If inptr and outptr are the same
+	mov	b, a
+	lda	outptr
+	cmp	b
+	mvi	a, 0
+	rz			; Return with no characters ready
+	mvi	a, 0FFh
 	ret
 
 ; Console in
-conin	jr	conin
+conin	call	const		; Wait for availability
+	jrz	conin
+	lda	outptr
+	mov	e, a		; Offset within buffer
+	mvi	d, 0
+	lxi	h, buffer	; Buffer origin
+	dad	d
+	inr	a
+	ani	31		; Modulo 32
+	sta	outptr
+	;mov	e, a
+	;mvi	d, 0
+	;lxi	h, keytab	; Get scancode translation from keytab
+	;dad	d
+	mov	a, m
 	ret
 
 ; Console out
@@ -190,6 +202,9 @@ conout	mvi	a, cr
 	mvi	a, lf
 	cmp	c
 	jrz	conlf
+	mvi	a, bs
+	cmp	c
+	jrz	conbs
 	mvi	a, ' '
 	cmp	c
 	jrnz	conout1
@@ -210,24 +225,28 @@ conout1	push	d
 	mvi	l, 0		; Newline
 	inr	h
 	shld	cursor
+	lxi	h, cursor+1
+	mov	a, m
 	jr	scroll
 
-concr:	lhld	cursor
-	xra	a		; Move cursor to start of line
-	mov	l, a
-	shld	cursor
+concr:	xra	a		; Low byte is column
+	sta	cursor
 	ret
 	
-conlf:	lhld	cursor		; Newline and scroll
-	inr	h
-	shld	cursor
+conbs:	lxi	h, cursor	; Point at cursor column
+	dcr	m		; Backspace it
+	rnc			; Too far?
+	inr	m		; Undo
+	ret
+	
+conlf:	lxi	h, cursor+1	; Newline and scroll
+	inr	m		; High byte is line
+	mov	a, m
 
-scroll:	mvi	a, 23
-	cmp	h
-	rnc
+scroll:	cpi	24
+	rc
+	dcr	m
 
-	mvi	h, 23		; 0..22
-	shld	cursor
 	mvi	a, 0E0h
 scrll:	push	a
 	mov	d, a
@@ -281,7 +300,15 @@ home:	lda	hstwrt	;check for pending write
 	sta	hstact	;clear host active flag
 homed:	lxi	b, 0
 	call	settrk
-	ret
+	
+	mvi	a, 007h		; Recalibrate
+	call	fdcio
+	mvi	a, 1		; Permanently on drive 1 for now
+	call	fdcio
+	
+	jmp	waitirq
+	
+	;ret
 ;
 seldsk:
 	;select disk
@@ -563,8 +590,8 @@ readhst:
 	;hstdsk = host disk #, hsttrk = host track #,
 	;hstsec = host sect #. read "hstsiz" bytes
 	;into hstbuf and return error flag in erflag.
-	lxi	d, crlf
-	call	print
+;	lxi	d, crlf
+;	call	print
 	
 	in	fdcctrl		; Motor 1 on
 	setb	2, a
@@ -576,6 +603,8 @@ readhst:
 	mvi	a, 046h		; Read sector MFM
 	call	fdcio
 	call	dchrn		; Drive C H R N
+	
+	di
 
 	; Main read loop
 	lxi	b, fdcdata	; B = 0 C = port
@@ -588,13 +617,23 @@ readl:	in	irqstat
 	jrnz	readl
 	call	fdctc		; Send TC
 
-fdcret	call	fdcio
+fdcret	ei
+	call	fdcio
+	;push	psw
+	;call	phex
+	;pop	psw
 	ani	0D8h		; Interested in bits 7,6,4,3
 	mov	b, a
 	call	fdcio		; ST1
+	;push	psw
+	;call	phex
+	;pop	psw
 	ora	b
 	mov	b, a
 	call	fdcio		; ST2
+	;push	psw
+	;call	phex
+	;pop	psw
 	ani	03Fh		; Interested in bits 5..0
 	ora	b
 	mov	b, a
@@ -618,6 +657,7 @@ seektrk:
 	mvi	a, 00Fh		; SEEK
 	call	fdcio
 	lda	hstdsk		; Current disk
+	inr	a
 	mov	b, a
 	lda	hsttrk
 	ani	020h		; high byte of 0..31 is side
@@ -628,9 +668,15 @@ seektrk:
 	call	fdcio
 	lda	hsttrk		; Current track
 	call	fdcio
+
+waitirq	in	portb
+	bit	7, a
+	jrz	waitirq
+
 	ret
 
 dchrn:	lda	hstdsk		; Disk 1..2
+	inr	a		; 1..2 thank you!
 	mov	b, a
 	lda	hstsec
 	rar			; Move bit D4 to D2
@@ -690,12 +736,40 @@ _fdr2:	djnz	_fdr2
 	jmp	fdcio
 
 fdcwait:
-	in	fdcstat
-	and	0CFh		; RQM, DIO and seek status
+	lxi	b, 0
+	
+fdcwl	in	fdcstat
+	;push	psw
+	;call	phex
+	;lxi	d, bsbsbs
+	;call	print
+	;pop	psw
+	and	0C0h		; RQM, DIO and seek status
 	cpi	080h
 	rz
-	in	fdcdata
-	jr	fdcwait
+	
+	dcx	b
+	mov	a, b
+	ora	c
+	jrnz	fdcwl
+	
+	in	fdcctrl
+	setb	5, a
+	out	fdcctrl
+	call	wait
+	res	5, a
+	out	fdcctrl
+	call	wait
+
+	mvi	c, '.'
+	call	conout
+	jr	fdcwl
+
+wait	dcx	b
+	mov	a, b
+	ora	c
+	jnz	wait
+	ret
 
 fdcio:
 	push	psw
@@ -706,7 +780,7 @@ fdcwl1:	in	fdcstat
 	jrnz	fdcio1
 	pop	psw
 	out	fdcdata
-	jmp	phex
+	;jmp	phex
 	ret
 	
 fdcio1:	pop	psw
@@ -732,38 +806,129 @@ print	ldax	d
 	call	conout
 	jmp	print
 
-mesg	db	"48k CP/M 2.2"
-crlf	db	cr,lf,0
+	
+kbinit:	di
+	im2
+	mvi	a, 07h		; Disable interrupts
+	out	cmda
+	out	cmdb
+	
+	mvi	a, (low irqtab)
+	out	cmda
+	out	cmdb
+	mvi	a, (high irqtab)
+	stai
+	
+	mvi	a, 04Fh		; Set mode
+	out	cmda
+	mvi	a, 087h		; Enable interrupts for PORTA
+	out	cmda
+	
+	mvi	a, 0FFh
+	out	cmdb
+	mvi	a, 0C1h		; Input bits
+	out	cmdb
+	
+	xra	a
+	out	portb
+	sta	inptr
+	sta	outptr
+	
+	in	porta
+	in	portb
+	
+	ei
+	ret
+	
+kbirq:	push	psw
+	push	h
+	push	d
+	push	b
+	
+	lda	inptr
+	mov	e, a
+	mvi	d, 0
+	lxi	h, buffer
+	dad	d
+	inr	a
+	ani	31		; Modulo 32
+	sta	inptr
+	
+	in	porta
+	mov	m, a
+	
+	pop	b
+	pop	d
+	pop	h
+	pop	psw
+	ei
+	reti
 
+mesg	db	"47k CP/M 2.2"
+crlf	db	cr,lf,0
+bsbsbs	db	8,8,8,0
 
 	dw	0,0,0,0,0,0
 	dw	0,0,0,0,0,0
 	dw	0,0,0,0,0,0
 stack:
 
-phex	push	psw
-	mvi	c, ' '
-	call	conout
-	pop	psw
-	push	psw		; Will use A twice
-	rar			; Shift upper to lower nibble
-	rar
-	rar
-	rar
-	call	phex1		; Print it
-	pop	psw		; Restore original Acc
-phex1	ani	00Fh		; Mask off high nibble
-	adi	090h		; Decimal adjust for ASCII
-	daa
-	aci	040h
-	daa
-	mov	c, a		; Print it
-	jmp	conout
-	ret
+;phex	push	psw
+;	mvi	c, ' '
+;	call	conout
+;	pop	psw
+;	push	psw		; Will use A twice
+;	rar			; Shift upper to lower nibble
+;	rar
+;	rar
+;	rar
+;	call	phex1		; Print it
+;	pop	psw		; Restore original Acc
+;phex1	ani	00Fh		; Mask off high nibble
+;	adi	090h		; Decimal adjust for ASCII
+;	daa
+;	aci	040h
+;	daa
+;	mov	c, a		; Print it
+;	jmp	conout
+;	ret
 	
+
+keytab:	db	0,0,0,0,0,0,0,0	; 00..07
+	db	0,0,0,0,0,0,0,0 ; 08..0F
+
+	db	0,0,0,0,0,0,0,0 ; 10..17
+	db	0,0,0,0,0,0,0,0 ; 18..1F
+	
+	db	020h,021h,022h,023h,024h,025h,026h,027h	; 20..27
+	db	028h,029h,02Ah,02Bh,02Ch,02Dh,02Eh,02Fh	; 28..2F
+
+	db	030h,031h,032h,033h,034h,035h,036h,037h	; 30..37
+	db	038h,039h,03Ah,03Bh,03Ch,03Dh,03Eh,03Fh	; 38..3F
+	
+	db	040h,041h,042h,043h,044h,045h,046h,047h	; 40..47
+	db	048h,049h,04Ah,04Bh,04Ch,04Dh,04Eh,04Fh	; 48..4F
+
+	db	050h,051h,052h,053h,054h,055h,056h,057h	; 50..57
+	db	058h,059h,05Ah,05Bh,05Ch,05Dh,05Eh,05Fh	; 58..5F
+
+	db	060h,061h,062h,063h,064h,065h,066h,067h	; 60..67
+	db	068h,069h,06Ah,06Bh,06Ch,06Dh,06Eh,06Fh	; 68..6F
+
+	db	070h,071h,072h,073h,074h,075h,076h,077h	; 70..77
+	db	078h,079h,07Ah,07Bh,07Ch,07Dh,07Eh,07Fh	; 78..7F
+
+	org	(($ + 16) AND 0FFFEh)
+
+irqtab:	dw	kbirq
+
+buffer:	ds	32		; Keyboard buffer
+inptr:	db	0
+outptr:	db	0
+
 	disks	1
 	;      dn,fsc,   lsc,[skf],bls   ,dks,dir,cks,ofs,[0]
-	diskdef 0,  1,cpmspt,1    ,blksiz,135,128,128,1
+	diskdef 0,  1,cpmspt,1    ,blksiz,160,128,128,1
 ;
 ;	the remainder of the cbios is reserved uninitialized
 ;	data area, and does not need to be a Part of the

@@ -661,7 +661,7 @@ uint64_t _upd765_update_int (upd765_t *upd, uint64_t pins)
 {
 	pins |= (upd->phase == UPD765_PHASE_IDLE || upd->phase == UPD765_PHASE_RESULT) ? UPD765_INT : 0;
 	pins |= ((upd->cmd & 0x1F) == UPD765_CMD_READ_DATA) ? UPD765_DRQ : 0;
-	if (pins & UPD765_TC && upd->phase != UPD765_PHASE_RESULT)
+	if ((pins & UPD765_TC) && upd->phase != UPD765_PHASE_RESULT)
 	{
 		upd->phase = UPD765_PHASE_EXEC;
 		_upd765_to_phase_result(upd);
