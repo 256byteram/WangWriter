@@ -52,3 +52,6 @@ Mkfile.old
 dkms.conf
 snapshot.bin
 *.bak
+/CPM/ZORK1.img
+/CPM/diskfiles/ZORK1.COM
+/CPM/diskfiles/ZORK1.DAT

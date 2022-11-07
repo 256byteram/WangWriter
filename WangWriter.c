@@ -260,12 +260,6 @@ uint64_t cpu_tick (wangwriter_t *machine, uint64_t pins, const uint8_t key, uint
 			const uint8_t data = Z80_GET_DATA(pins);
 			switch (addr & 0xFF)
 			{
-				case 0:
-				{
-					printf ("%02X ", Z80_GET_DATA(pins));
-					break;
-				}
-
 				case UPPER_BANK_SEL:
 				{
 					prom_sel = data;
