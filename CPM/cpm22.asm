@@ -50,8 +50,8 @@ CBASE	JMP	COMMAND		;execute command processor (ccp).
 ; (actual length), (char #1), (char #2), (char #3), etc.
 ;
 INBUFF	DB	127	;length of input buffer.
-	DB	5	;current length of contents.
-	DB	"ZORK1",0
+	DB	0	;current length of contents.
+	DB	32,32,32,32,32,32
 	DB	32,32,32,32,32,32,32,32,32,32
 	DB	"Copyright"
 	DB	" 1979 (c) by Digital Research      "

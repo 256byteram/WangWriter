@@ -188,10 +188,10 @@ conin	call	const		; Wait for availability
 	inr	a
 	ani	31		; Modulo 32
 	sta	outptr
-	;mov	e, a
-	;mvi	d, 0
-	;lxi	h, keytab	; Get scancode translation from keytab
-	;dad	d
+	mov	e, a
+	mvi	d, 0
+	lxi	h, keytab	; Get scancode translation from keytab
+	dad	d
 	mov	a, m
 	ret
 
@@ -894,30 +894,23 @@ stack:
 ;	ret
 	
 
-keytab:	db	0,0,0,0,0,0,0,0	; 00..07
-	db	0,0,0,0,0,0,0,0 ; 08..0F
-
-	db	0,0,0,0,0,0,0,0 ; 10..17
-	db	0,0,0,0,0,0,0,0 ; 18..1F
-	
-	db	020h,021h,022h,023h,024h,025h,026h,027h	; 20..27
-	db	028h,029h,02Ah,02Bh,02Ch,02Dh,02Eh,02Fh	; 28..2F
-
-	db	030h,031h,032h,033h,034h,035h,036h,037h	; 30..37
-	db	038h,039h,03Ah,03Bh,03Ch,03Dh,03Eh,03Fh	; 38..3F
-	
-	db	040h,041h,042h,043h,044h,045h,046h,047h	; 40..47
-	db	048h,049h,04Ah,04Bh,04Ch,04Dh,04Eh,04Fh	; 48..4F
-
-	db	050h,051h,052h,053h,054h,055h,056h,057h	; 50..57
-	db	058h,059h,05Ah,05Bh,05Ch,05Dh,05Eh,05Fh	; 58..5F
-
-	db	060h,061h,062h,063h,064h,065h,066h,067h	; 60..67
-	db	068h,069h,06Ah,06Bh,06Ch,06Dh,06Eh,06Fh	; 68..6F
-
-	db	070h,071h,072h,073h,074h,075h,076h,077h	; 70..77
-	db	078h,079h,07Ah,07Bh,07Ch,07Dh,07Eh,07Fh	; 78..7F
-
+keytab:	
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,2Eh,08h,20h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,3Fh,2Ch,6Dh,6Eh,62h,76h,63h,78h,7Ah
+	db	00h,00h,00h,00h,0Dh,27h,3Bh,6Ch,6Bh,6Ah,68h,67h,66h,64h,73h,61h
+	db	00h,00h,00h,00h,00h,5Bh,70h,6Fh,69h,75h,79h,74h,72h,65h,77h,71h
+	db	00h,00h,00h,2Dh,3Dh,30h,39h,38h,37h,36h,35h,34h,33h,32h,31h,09h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,2Eh,08h,20h,00h,00h,00h
+	db	00h,00h,00h,00h,00h,00h,00h,2Fh,2Ch,4Dh,4Eh,42h,56h,43h,58h,5Ah
+	db	00h,00h,00h,00h,0Dh,22h,3Ah,4Ch,4Bh,4Ah,48h,47h,46h,44h,53h,41h
+	db	00h,00h,00h,00h,00h,5Dh,50h,4Fh,49h,55h,59h,54h,52h,45h,57h,51h
+	db	00h,00h,00h,2Bh,5Fh,29h,28h,2Ah,26h,5Eh,25h,24h,23h,40h,21h,09h
+	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
 	org	(($ + 16) AND 0FFFEh)
 
 irqtab:	dw	kbirq

@@ -50,9 +50,9 @@
   50:				; (actual length), (char #1), (char #2), (char #3), etc.
   51:				;
   52:     -	A006  7F      	INBUFF	DB	127	;length of input buffer.
-  53:     -	A007  05      		DB	5	;current length of contents.
-  54:     -	A008  5A4F524B		DB	"ZORK1",0
-	              3100
+  53:     -	A007  00      		DB	0	;current length of contents.
+  54:     -	A008  20202020		DB	32,32,32,32,32,32
+	              2020
   55:     -	A00E  20202020		DB	32,32,32,32,32,32,32,32,32,32
 	              20202020
 	              2020
