@@ -916,102 +916,102 @@
  188:  893+5	B6D8  3C      		inr	a
  189:  898+7	B6D9  E61F    		ani	31		; Modulo 32
  190:  905+13	B6DB  32B9BB  		sta	outptr
- 191:  918+5	B6DE  5F      		mov	e, a
- 192:  923+7	B6DF  1600    		mvi	d, 0
- 193:  930+10	B6E1  2186BA  		lxi	h, keytab	; Get scancode translation from keytab
- 194:  940+10	B6E4  19      		dad	d
- 195:  950+7	B6E5  7E      		mov	a, m
- 196:  957+10	B6E6  C9      		ret
+ 191:  918+7	B6DE  5E      		mov	e, m
+ 192:  925+7	B6DF  1600    		mvi	d, 0
+ 193:  932+10	B6E1  2186BA  		lxi	h, keytab	; Get scancode translation from keytab
+ 194:  942+10	B6E4  19      		dad	d
+ 195:  952+7	B6E5  7E      		mov	a, m
+ 196:  959+10	B6E6  C9      		ret
  197:				
  198:				; Console out
- 199:  967+7	B6E7  3E0D    	conout	mvi	a, cr
- 200:  974+4	B6E9  B9      		cmp	c
+ 199:  969+7	B6E7  3E0D    	conout	mvi	a, cr
+ 200:  976+4	B6E9  B9      		cmp	c
  201:     -	B6EA  2831    		jrz	concr
- 202:  978+7	B6EC  3E0A    		mvi	a, lf
- 203:  985+4	B6EE  B9      		cmp	c
+ 202:  980+7	B6EC  3E0A    		mvi	a, lf
+ 203:  987+4	B6EE  B9      		cmp	c
  204:     -	B6EF  2838    		jrz	conlf
- 205:  989+7	B6F1  3E08    		mvi	a, bs
- 206:  996+4	B6F3  B9      		cmp	c
+ 205:  991+7	B6F1  3E08    		mvi	a, bs
+ 206:  998+4	B6F3  B9      		cmp	c
  207:     -	B6F4  282C    		jrz	conbs
- 208: 1000+7	B6F6  3E20    		mvi	a, ' '
- 209: 1007+4	B6F8  B9      		cmp	c
+ 208: 1002+7	B6F6  3E20    		mvi	a, ' '
+ 209: 1009+4	B6F8  B9      		cmp	c
  210:     -	B6F9  2002    		jrnz	conout1
- 211: 1011+7	B6FB  0E00    		mvi	c, 0		; Blank for space
- 212: 1018+11	B6FD  D5      	conout1	push	d
- 213: 1029+16	B6FE  2A59B7  		lhld	cursor
- 214: 1045+11	B701  E5      		push	h
- 215: 1056+10	B702  1100E0  		lxi	d, 0E000h	; CRT base address
- 216: 1066+10	B705  19      		dad	d
- 217: 1076+7	B706  71      		mov	m, c
- 218: 1083+10	B707  E1      		pop	h
- 219: 1093+10	B708  D1      		pop	d
- 220: 1103+5	B709  23      		inx	h
- 221: 1108+16	B70A  2259B7  		shld	cursor
- 222: 1124+7	B70D  3E50    		mvi	a, 80		; 80 columns
- 223: 1131+4	B70F  BD      		cmp	l
- 224: 1135+5+6	B710  C0      		rnz
- 225: 1140+7	B711  2E00    		mvi	l, 0		; Newline
- 226: 1147+5	B713  24      		inr	h
- 227: 1152+16	B714  2259B7  		shld	cursor
- 228: 1168+10	B717  215AB7  		lxi	h, cursor+1
- 229: 1178+7	B71A  7E      		mov	a, m
+ 211: 1013+7	B6FB  0E00    		mvi	c, 0		; Blank for space
+ 212: 1020+11	B6FD  D5      	conout1	push	d
+ 213: 1031+16	B6FE  2A59B7  		lhld	cursor
+ 214: 1047+11	B701  E5      		push	h
+ 215: 1058+10	B702  1100E0  		lxi	d, 0E000h	; CRT base address
+ 216: 1068+10	B705  19      		dad	d
+ 217: 1078+7	B706  71      		mov	m, c
+ 218: 1085+10	B707  E1      		pop	h
+ 219: 1095+10	B708  D1      		pop	d
+ 220: 1105+5	B709  23      		inx	h
+ 221: 1110+16	B70A  2259B7  		shld	cursor
+ 222: 1126+7	B70D  3E50    		mvi	a, 80		; 80 columns
+ 223: 1133+4	B70F  BD      		cmp	l
+ 224: 1137+5+6	B710  C0      		rnz
+ 225: 1142+7	B711  2E00    		mvi	l, 0		; Newline
+ 226: 1149+5	B713  24      		inr	h
+ 227: 1154+16	B714  2259B7  		shld	cursor
+ 228: 1170+10	B717  215AB7  		lxi	h, cursor+1
+ 229: 1180+7	B71A  7E      		mov	a, m
  230:     -	B71B  1811    		jr	scroll
  231:				
- 232: 1185+4	B71D  AF      	concr:	xra	a		; Low byte is column
- 233: 1189+13	B71E  3259B7  		sta	cursor
- 234: 1202+10	B721  C9      		ret
+ 232: 1187+4	B71D  AF      	concr:	xra	a		; Low byte is column
+ 233: 1191+13	B71E  3259B7  		sta	cursor
+ 234: 1204+10	B721  C9      		ret
  235:					
- 236: 1212+10	B722  2159B7  	conbs:	lxi	h, cursor	; Point at cursor column
- 237: 1222+10	B725  35      		dcr	m		; Backspace it
- 238: 1232+5+6	B726  D0      		rnc			; Too far?
- 239: 1237+10	B727  34      		inr	m		; Undo
- 240: 1247+10	B728  C9      		ret
+ 236: 1214+10	B722  2159B7  	conbs:	lxi	h, cursor	; Point at cursor column
+ 237: 1224+10	B725  35      		dcr	m		; Backspace it
+ 238: 1234+5+6	B726  D0      		rnc			; Too far?
+ 239: 1239+10	B727  34      		inr	m		; Undo
+ 240: 1249+10	B728  C9      		ret
  241:					
- 242: 1257+10	B729  215AB7  	conlf:	lxi	h, cursor+1	; Newline and scroll
- 243: 1267+10	B72C  34      		inr	m		; High byte is line
- 244: 1277+7	B72D  7E      		mov	a, m
+ 242: 1259+10	B729  215AB7  	conlf:	lxi	h, cursor+1	; Newline and scroll
+ 243: 1269+10	B72C  34      		inr	m		; High byte is line
+ 244: 1279+7	B72D  7E      		mov	a, m
  245:				
- 246: 1284+7	B72E  FE18    	scroll:	cpi	24
- 247: 1291+5+6	B730  D8      		rc
- 248: 1296+10	B731  35      		dcr	m
+ 246: 1286+7	B72E  FE18    	scroll:	cpi	24
+ 247: 1293+5+6	B730  D8      		rc
+ 248: 1298+10	B731  35      		dcr	m
  249:				
- 250: 1306+7	B732  3EE0    		mvi	a, 0E0h
- 251: 1313+11	B734  F5      	scrll:	push	a
- 252: 1324+5	B735  57      		mov	d, a
- 253: 1329+7	B736  1E00    		mvi	e, 0
- 254: 1336+5	B738  3C      		inr	a
- 255: 1341+5	B739  67      		mov	h, a
- 256: 1346+7	B73A  2E00    		mvi	l, 0
- 257: 1353+10	B73C  015000  		lxi	b, 80
+ 250: 1308+7	B732  3EE0    		mvi	a, 0E0h
+ 251: 1315+11	B734  F5      	scrll:	push	a
+ 252: 1326+5	B735  57      		mov	d, a
+ 253: 1331+7	B736  1E00    		mvi	e, 0
+ 254: 1338+5	B738  3C      		inr	a
+ 255: 1343+5	B739  67      		mov	h, a
+ 256: 1348+7	B73A  2E00    		mvi	l, 0
+ 257: 1355+10	B73C  015000  		lxi	b, 80
  258:     -	B73F  EDB0    		ldir
- 259: 1363+10	B741  F1      		pop	a
- 260: 1373+5	B742  3C      		inr	a
- 261: 1378+7	B743  FEF7    		cpi	0F7h
+ 259: 1365+10	B741  F1      		pop	a
+ 260: 1375+5	B742  3C      		inr	a
+ 261: 1380+7	B743  FEF7    		cpi	0F7h
  262:     -	B745  20ED    		jrnz	scrll
  263:					
- 264: 1385+4	B747  AF      		xra	a		; Last line blanked
- 265: 1389+10	B748  2100F7  		lxi	h, 0F700h
- 266: 1399+7	B74B  0650    		mvi	b, 80
- 267: 1406+7	B74D  77      	endlin:	mov	m, a
- 268: 1413+5	B74E  23      		inx	h
+ 264: 1387+4	B747  AF      		xra	a		; Last line blanked
+ 265: 1391+10	B748  2100F7  		lxi	h, 0F700h
+ 266: 1401+7	B74B  0650    		mvi	b, 80
+ 267: 1408+7	B74D  77      	endlin:	mov	m, a
+ 268: 1415+5	B74E  23      		inx	h
  269:     -	B74F  10FC    		djnz	endlin
- 270: 1418+10	B751  C9      		ret
+ 270: 1420+10	B751  C9      		ret
  271:					
  272:				
  273:				
  274:				; List out
- 275: 1428+10	B752  C9      	list:	ret
+ 275: 1430+10	B752  C9      	list:	ret
  276:				
  277:				; List status
- 278: 1438+4	B753  AF      	listst	xra	a
- 279: 1442+10	B754  C9      		ret
+ 278: 1440+4	B753  AF      	listst	xra	a
+ 279: 1444+10	B754  C9      		ret
  280:				
  281:				; Punch out
- 282: 1452+10	B755  C9      	punch	ret
+ 282: 1454+10	B755  C9      	punch	ret
  283:				
  284:				; Reader in
- 285: 1462+7	B756  3E1A    	reader	mvi	a, 01Ah		; Return EOF for reader device
- 286: 1469+10	B758  C9      		ret
+ 285: 1464+7	B756  3E1A    	reader	mvi	a, 01Ah		; Return EOF for reader device
+ 286: 1471+10	B758  C9      		ret
  287:				
  288:				
  289:     -	B759  0000    	cursor	dw	0		; Cursor position
@@ -1022,59 +1022,59 @@
  294:				;	in the read and write	subroutines
  295:				;
  296:					;home the selected disk
- 297: 1479+13	B75B  3A23BC  	home:	lda	hstwrt	;check for pending write
- 298: 1492+4	B75E  B7      		ora	a
- 299: 1496+10	B75F  C265B7  		jnz	homed
- 300: 1506+13	B762  3222BC  		sta	hstact	;clear host active flag
- 301: 1519+10	B765  010000  	homed:	lxi	b, 0
- 302: 1529+17	B768  CD88B7  		call	settrk
+ 297: 1481+13	B75B  3A23BC  	home:	lda	hstwrt	;check for pending write
+ 298: 1494+4	B75E  B7      		ora	a
+ 299: 1498+10	B75F  C265B7  		jnz	homed
+ 300: 1508+13	B762  3222BC  		sta	hstact	;clear host active flag
+ 301: 1521+10	B765  010000  	homed:	lxi	b, 0
+ 302: 1531+17	B768  CD88B7  		call	settrk
  303:					
- 304: 1546+7	B76B  3E07    		mvi	a, 007h		; Recalibrate
- 305: 1553+17	B76D  CDD6B9  		call	fdcio
- 306: 1570+7	B770  3E01    		mvi	a, 1		; Permanently on drive 1 for now
- 307: 1577+17	B772  CDD6B9  		call	fdcio
+ 304: 1548+7	B76B  3E07    		mvi	a, 007h		; Recalibrate
+ 305: 1555+17	B76D  CDD6B9  		call	fdcio
+ 306: 1572+7	B770  3E01    		mvi	a, 1		; Permanently on drive 1 for now
+ 307: 1579+17	B772  CDD6B9  		call	fdcio
  308:					
- 309: 1594+10	B775  C33CB9  		jmp	waitirq
+ 309: 1596+10	B775  C33CB9  		jmp	waitirq
  310:					
  311:					;ret
  312:				;
  313:     -	B778          	seldsk:
  314:					;select disk
- 315: 1604+5	B778  79      		mov	a,c		;selected disk number
- 316: 1609+13	B779  3219BC  		sta	sekdsk		;seek disk number
- 317: 1622+5	B77C  6F      		mov	l,a		;disk number to HL
- 318: 1627+7	B77D  2600    		mvi	h,0
- 319: 1634+40	B77F  29292929		rept	4		;multiply by 16
- 322: 1674+10	B783  11BABB  		lxi	d,dpbase	;base of parm block
- 323: 1684+10	B786  19      		dad	d		;hl=.dpb(curdsk)
- 324: 1694+10	B787  C9      		ret
+ 315: 1606+5	B778  79      		mov	a,c		;selected disk number
+ 316: 1611+13	B779  3219BC  		sta	sekdsk		;seek disk number
+ 317: 1624+5	B77C  6F      		mov	l,a		;disk number to HL
+ 318: 1629+7	B77D  2600    		mvi	h,0
+ 319: 1636+40	B77F  29292929		rept	4		;multiply by 16
+ 322: 1676+10	B783  11BABB  		lxi	d,dpbase	;base of parm block
+ 323: 1686+10	B786  19      		dad	d		;hl=.dpb(curdsk)
+ 324: 1696+10	B787  C9      		ret
  325:					;
  326:     -	B788          	settrk:	;set track given by register bc
  327:					;mov	h,b
- 328: 1704+7	B788  2600    		mvi	h,0
- 329: 1711+5	B78A  69      		mov	l,c
- 330: 1716+16	B78B  221ABC  		shld	sektrk
- 331: 1732+10	B78E  C9      		ret
+ 328: 1706+7	B788  2600    		mvi	h,0
+ 329: 1713+5	B78A  69      		mov	l,c
+ 330: 1718+16	B78B  221ABC  		shld	sektrk
+ 331: 1734+10	B78E  C9      		ret
  332:				;
  333:     -	B78F          	setsec:
  334:					;set sector given by register c 
- 335: 1742+5	B78F  79      		mov	a,c
- 336: 1747+13	B790  321CBC  		sta	seksec		;sector to seek
+ 335: 1744+5	B78F  79      		mov	a,c
+ 336: 1749+13	B790  321CBC  		sta	seksec		;sector to seek
  337:					;jmp	phex
- 338: 1760+10	B793  C9      		ret
+ 338: 1762+10	B793  C9      		ret
  339:				
  340:     -	B794          	setdma:
  341:					;set dma address given by BC
- 342: 1770+5	B794  60      		mov	h,b
- 343: 1775+5	B795  69      		mov	l,c
- 344: 1780+16	B796  222DBC  		shld	dmaadr
- 345: 1796+10	B799  C9      		ret
+ 342: 1772+5	B794  60      		mov	h,b
+ 343: 1777+5	B795  69      		mov	l,c
+ 344: 1782+16	B796  222DBC  		shld	dmaadr
+ 345: 1798+10	B799  C9      		ret
  346:				;
  347:     -	B79A          	sectran:
  348:					;translate sector number BC
- 349: 1806+5	B79A  60      		mov	h,b
- 350: 1811+5	B79B  69      		mov	l,c
- 351: 1816+10	B79C  C9      		ret
+ 349: 1808+5	B79A  60      		mov	h,b
+ 350: 1813+5	B79B  69      		mov	l,c
+ 351: 1818+10	B79C  C9      		ret
  352:				;
  353:				;*****************************************************
  354:				;*                                                   *
@@ -1084,14 +1084,14 @@
  358:				;*****************************************************
  359:     -	B79D          	read:
  360:					;read the selected CP/M sector
- 361: 1826+4	B79D  AF      		xra	a
- 362: 1830+13	B79E  3224BC  		sta	unacnt
- 363: 1843+7	B7A1  3E01    		mvi	a,1
- 364: 1850+13	B7A3  322BBC  		sta	readop		;read operation
- 365: 1863+13	B7A6  322ABC  		sta	rsflag		;must read data
- 366: 1876+7	B7A9  3E02    		mvi	a,wrual
- 367: 1883+13	B7AB  322CBC  		sta	wrtype		;treat as unalloc
- 368: 1896+10	B7AE  C31CB8  		jmp	rwoper		;to perform the read
+ 361: 1828+4	B79D  AF      		xra	a
+ 362: 1832+13	B79E  3224BC  		sta	unacnt
+ 363: 1845+7	B7A1  3E01    		mvi	a,1
+ 364: 1852+13	B7A3  322BBC  		sta	readop		;read operation
+ 365: 1865+13	B7A6  322ABC  		sta	rsflag		;must read data
+ 366: 1878+7	B7A9  3E02    		mvi	a,wrual
+ 367: 1885+13	B7AB  322CBC  		sta	wrtype		;treat as unalloc
+ 368: 1898+10	B7AE  C31CB8  		jmp	rwoper		;to perform the read
  369:				;
  370:				;*****************************************************
  371:				;*                                                   *
@@ -1101,72 +1101,72 @@
  375:				;*****************************************************
  376:     -	B7B1          	write:
  377:					;write the selected CP/M sector
- 378: 1906+4	B7B1  AF      		xra	a		;0 to accumulator
- 379: 1910+13	B7B2  322BBC  		sta	readop		;not a read operation
- 380: 1923+5	B7B5  79      		mov	a,c		;write type in c
- 381: 1928+13	B7B6  322CBC  		sta	wrtype
- 382: 1941+7	B7B9  FE02    		cpi	wrual		;write unallocated?
- 383: 1948+10	B7BB  C2D5B7  		jnz	chkuna		;check for unalloc
+ 378: 1908+4	B7B1  AF      		xra	a		;0 to accumulator
+ 379: 1912+13	B7B2  322BBC  		sta	readop		;not a read operation
+ 380: 1925+5	B7B5  79      		mov	a,c		;write type in c
+ 381: 1930+13	B7B6  322CBC  		sta	wrtype
+ 382: 1943+7	B7B9  FE02    		cpi	wrual		;write unallocated?
+ 383: 1950+10	B7BB  C2D5B7  		jnz	chkuna		;check for unalloc
  384:				;
  385:				;	write to unallocated, set parameters
- 386: 1958+7	B7BE  3E10    		mvi	a,blksiz/128	;next unalloc recs
- 387: 1965+13	B7C0  3224BC  		sta	unacnt
- 388: 1978+13	B7C3  3A19BC  		lda	sekdsk		;disk to seek
- 389: 1991+13	B7C6  3225BC  		sta	unadsk		;unadsk = sekdsk
- 390: 2004+16	B7C9  2A1ABC  		lhld	sektrk
- 391: 2020+16	B7CC  2226BC  		shld	unatrk		;unatrk = sectrk
- 392: 2036+13	B7CF  3A1CBC  		lda	seksec
- 393: 2049+13	B7D2  3228BC  		sta	unasec		;unasec = seksec
+ 386: 1960+7	B7BE  3E10    		mvi	a,blksiz/128	;next unalloc recs
+ 387: 1967+13	B7C0  3224BC  		sta	unacnt
+ 388: 1980+13	B7C3  3A19BC  		lda	sekdsk		;disk to seek
+ 389: 1993+13	B7C6  3225BC  		sta	unadsk		;unadsk = sekdsk
+ 390: 2006+16	B7C9  2A1ABC  		lhld	sektrk
+ 391: 2022+16	B7CC  2226BC  		shld	unatrk		;unatrk = sectrk
+ 392: 2038+13	B7CF  3A1CBC  		lda	seksec
+ 393: 2051+13	B7D2  3228BC  		sta	unasec		;unasec = seksec
  394:				;
  395:     -	B7D5          	chkuna:
  396:					;check for write to unallocated sector
- 397: 2062+13	B7D5  3A24BC  		lda	unacnt		;any unalloc remain?
- 398: 2075+4	B7D8  B7      		ora	a
- 399: 2079+10	B7D9  CA14B8  		jz	alloc		;skip if not
+ 397: 2064+13	B7D5  3A24BC  		lda	unacnt		;any unalloc remain?
+ 398: 2077+4	B7D8  B7      		ora	a
+ 399: 2081+10	B7D9  CA14B8  		jz	alloc		;skip if not
  400:				;
  401:				;	more unallocated records remain
- 402: 2089+5	B7DC  3D      		dcr	a		;unacnt = unacnt-1
- 403: 2094+13	B7DD  3224BC  		sta	unacnt
- 404: 2107+13	B7E0  3A19BC  		lda	sekdsk		;same disk?
- 405: 2120+10	B7E3  2125BC  		lxi	h,unadsk
- 406: 2130+7	B7E6  BE      		cmp	m		;sekdsk = unadsk?
- 407: 2137+10	B7E7  C214B8  		jnz	alloc		;skip if not
+ 402: 2091+5	B7DC  3D      		dcr	a		;unacnt = unacnt-1
+ 403: 2096+13	B7DD  3224BC  		sta	unacnt
+ 404: 2109+13	B7E0  3A19BC  		lda	sekdsk		;same disk?
+ 405: 2122+10	B7E3  2125BC  		lxi	h,unadsk
+ 406: 2132+7	B7E6  BE      		cmp	m		;sekdsk = unadsk?
+ 407: 2139+10	B7E7  C214B8  		jnz	alloc		;skip if not
  408:				;
  409:				;	disks are the same
- 410: 2147+10	B7EA  2126BC  		lxi	h,unatrk
- 411: 2157+17	B7ED  CDB7B8  		call	sektrkcmp	;sektrk = unatrk?
- 412: 2174+10	B7F0  C214B8  		jnz	alloc		;skip if not
+ 410: 2149+10	B7EA  2126BC  		lxi	h,unatrk
+ 411: 2159+17	B7ED  CDB7B8  		call	sektrkcmp	;sektrk = unatrk?
+ 412: 2176+10	B7F0  C214B8  		jnz	alloc		;skip if not
  413:				;
  414:				;	tracks are the same
- 415: 2184+13	B7F3  3A1CBC  		lda	seksec		;same sector?
- 416: 2197+10	B7F6  2128BC  		lxi	h,unasec
- 417: 2207+7	B7F9  BE      		cmp	m		;seksec = unasec?
- 418: 2214+10	B7FA  C214B8  		jnz	alloc		;skip if not
+ 415: 2186+13	B7F3  3A1CBC  		lda	seksec		;same sector?
+ 416: 2199+10	B7F6  2128BC  		lxi	h,unasec
+ 417: 2209+7	B7F9  BE      		cmp	m		;seksec = unasec?
+ 418: 2216+10	B7FA  C214B8  		jnz	alloc		;skip if not
  419:				;
  420:				;	match, move to next sector for future ref
- 421: 2224+10	B7FD  34      		inr	m		;unasec = unasec+1
- 422: 2234+7	B7FE  7E      		mov	a,m		;end of track?
- 423: 2241+7	B7FF  FE40    		cmp	cpmspt		;count CP/M sectors
- 424: 2248+10	B801  DA0DB8  		jc	noovf		;skip if no overflow
+ 421: 2226+10	B7FD  34      		inr	m		;unasec = unasec+1
+ 422: 2236+7	B7FE  7E      		mov	a,m		;end of track?
+ 423: 2243+7	B7FF  FE40    		cmp	cpmspt		;count CP/M sectors
+ 424: 2250+10	B801  DA0DB8  		jc	noovf		;skip if no overflow
  425:				;
  426:				;	overflow to next track
- 427: 2258+10	B804  3600    		mvi	m,0		;unasec = 0
- 428: 2268+16	B806  2A26BC  		lhld	unatrk
- 429: 2284+5	B809  23      		inx	h
- 430: 2289+16	B80A  2226BC  		shld	unatrk		;unatrk = unatrk+1
+ 427: 2260+10	B804  3600    		mvi	m,0		;unasec = 0
+ 428: 2270+16	B806  2A26BC  		lhld	unatrk
+ 429: 2286+5	B809  23      		inx	h
+ 430: 2291+16	B80A  2226BC  		shld	unatrk		;unatrk = unatrk+1
  431:				;
  432:     -	B80D          	noovf:
  433:					;match found, mark as unnecessary read
- 434: 2305+4	B80D  AF      		xra	a		;0 to accumulator
- 435: 2309+13	B80E  322ABC  		sta	rsflag		;rsflag = 0
- 436: 2322+10	B811  C31CB8  		jmp	rwoper		;to perform the write
+ 434: 2307+4	B80D  AF      		xra	a		;0 to accumulator
+ 435: 2311+13	B80E  322ABC  		sta	rsflag		;rsflag = 0
+ 436: 2324+10	B811  C31CB8  		jmp	rwoper		;to perform the write
  437:				;
  438:     -	B814          	alloc:
  439:					;not an unallocated record, requires pre-read
- 440: 2332+4	B814  AF      		xra	a		;0 to accum
- 441: 2336+13	B815  3224BC  		sta	unacnt		;unacnt = 0
- 442: 2349+5	B818  3C      		inr	a		;1 to accum
- 443: 2354+13	B819  322ABC  		sta	rsflag		;rsflag = 1
+ 440: 2334+4	B814  AF      		xra	a		;0 to accum
+ 441: 2338+13	B815  3224BC  		sta	unacnt		;unacnt = 0
+ 442: 2351+5	B818  3C      		inr	a		;1 to accum
+ 443: 2356+13	B819  322ABC  		sta	rsflag		;rsflag = 1
  444:				;
  445:				;*****************************************************
  446:				;*                                                   *
@@ -1175,102 +1175,102 @@
  449:				;*****************************************************
  450:     -	B81C          	rwoper:
  451:					;enter here to perform the read/write
- 452: 2367+4	B81C  AF      		xra	a		;zero to accum
- 453: 2371+13	B81D  3229BC  		sta	erflag		;no errors (yet)
- 454: 2384+13	B820  3A1CBC  		lda	seksec		;compute host sector
- 455: 2397+8	B823  B71F    		rept	secshf
- 459: 2405+13	B825  3221BC  		sta	sekhst		;host sector to seek
+ 452: 2369+4	B81C  AF      		xra	a		;zero to accum
+ 453: 2373+13	B81D  3229BC  		sta	erflag		;no errors (yet)
+ 454: 2386+13	B820  3A1CBC  		lda	seksec		;compute host sector
+ 455: 2399+8	B823  B71F    		rept	secshf
+ 459: 2407+13	B825  3221BC  		sta	sekhst		;host sector to seek
  460:				;
  461:				;	active host sector?
- 462: 2418+10	B828  2122BC  		lxi	h,hstact	;host active flag
- 463: 2428+7	B82B  7E      		mov	a,m
- 464: 2435+10	B82C  3601    		mvi	m,1		;always becomes 1
- 465: 2445+4	B82E  B7      		ora	a		;was it already?
- 466: 2449+10	B82F  CA56B8  		jz	filhst		;fill host if not
+ 462: 2420+10	B828  2122BC  		lxi	h,hstact	;host active flag
+ 463: 2430+7	B82B  7E      		mov	a,m
+ 464: 2437+10	B82C  3601    		mvi	m,1		;always becomes 1
+ 465: 2447+4	B82E  B7      		ora	a		;was it already?
+ 466: 2451+10	B82F  CA56B8  		jz	filhst		;fill host if not
  467:				;
  468:				;	host buffer active, same as seek buffer?
- 469: 2459+13	B832  3A19BC  		lda	sekdsk
- 470: 2472+10	B835  211DBC  		lxi	h,hstdsk	;same disk?
- 471: 2482+7	B838  BE      		cmp	m		;sekdsk = hstdsk?
- 472: 2489+10	B839  C24FB8  		jnz	nomatch
+ 469: 2461+13	B832  3A19BC  		lda	sekdsk
+ 470: 2474+10	B835  211DBC  		lxi	h,hstdsk	;same disk?
+ 471: 2484+7	B838  BE      		cmp	m		;sekdsk = hstdsk?
+ 472: 2491+10	B839  C24FB8  		jnz	nomatch
  473:				;
  474:				;	same disk, same track?
- 475: 2499+10	B83C  211EBC  		lxi	h,hsttrk
- 476: 2509+17	B83F  CDB7B8  		call	sektrkcmp	;sektrk = hsttrk?
- 477: 2526+10	B842  C24FB8  		jnz	nomatch
+ 475: 2501+10	B83C  211EBC  		lxi	h,hsttrk
+ 476: 2511+17	B83F  CDB7B8  		call	sektrkcmp	;sektrk = hsttrk?
+ 477: 2528+10	B842  C24FB8  		jnz	nomatch
  478:				;
  479:				;	same disk, same track, same buffer?
- 480: 2536+13	B845  3A21BC  		lda	sekhst
- 481: 2549+10	B848  2120BC  		lxi	h,hstsec	;sekhst = hstsec?
- 482: 2559+7	B84B  BE      		cmp	m
- 483: 2566+10	B84C  CA73B8  		jz	match		;skip if match
+ 480: 2538+13	B845  3A21BC  		lda	sekhst
+ 481: 2551+10	B848  2120BC  		lxi	h,hstsec	;sekhst = hstsec?
+ 482: 2561+7	B84B  BE      		cmp	m
+ 483: 2568+10	B84C  CA73B8  		jz	match		;skip if match
  484:				;
  485:     -	B84F          	nomatch:
  486:					;proper disk, but not correct sector
- 487: 2576+13	B84F  3A23BC  		lda	hstwrt		;host written?
- 488: 2589+4	B852  B7      		ora	a
- 489: 2593+11+6	B853  C4C3B8  		cnz	writehst	;clear host buff
+ 487: 2578+13	B84F  3A23BC  		lda	hstwrt		;host written?
+ 488: 2591+4	B852  B7      		ora	a
+ 489: 2595+11+6	B853  C4C3B8  		cnz	writehst	;clear host buff
  490:				;
  491:     -	B856          	filhst:
  492:					;may have to fill the host buffer
- 493: 2604+13	B856  3A19BC  		lda	sekdsk
- 494: 2617+13	B859  321DBC  		sta	hstdsk
- 495: 2630+16	B85C  2A1ABC  		lhld	sektrk
- 496: 2646+16	B85F  221EBC  		shld	hsttrk
- 497: 2662+13	B862  3A21BC  		lda	sekhst
- 498: 2675+13	B865  3220BC  		sta	hstsec
- 499: 2688+13	B868  3A2ABC  		lda	rsflag		;need to read?
- 500: 2701+4	B86B  B7      		ora	a
- 501: 2705+11+6	B86C  C4C9B8  		cnz	readhst		;yes, if 1
- 502: 2716+4	B86F  AF      		xra	a		;0 to accum
- 503: 2720+13	B870  3223BC  		sta	hstwrt		;no pending write
+ 493: 2606+13	B856  3A19BC  		lda	sekdsk
+ 494: 2619+13	B859  321DBC  		sta	hstdsk
+ 495: 2632+16	B85C  2A1ABC  		lhld	sektrk
+ 496: 2648+16	B85F  221EBC  		shld	hsttrk
+ 497: 2664+13	B862  3A21BC  		lda	sekhst
+ 498: 2677+13	B865  3220BC  		sta	hstsec
+ 499: 2690+13	B868  3A2ABC  		lda	rsflag		;need to read?
+ 500: 2703+4	B86B  B7      		ora	a
+ 501: 2707+11+6	B86C  C4C9B8  		cnz	readhst		;yes, if 1
+ 502: 2718+4	B86F  AF      		xra	a		;0 to accum
+ 503: 2722+13	B870  3223BC  		sta	hstwrt		;no pending write
  504:				;
  505:     -	B873          	match:
  506:					;copy data to or from buffer
- 507: 2733+13	B873  3A1CBC  		lda	seksec		;mask buffer number
- 508: 2746+7	B876  E601    		ani	secmsk		;least signif bits
- 509: 2753+5	B878  6F      		mov	l,a		;ready to shift
- 510: 2758+7	B879  2600    		mvi	h,0		;double count
- 511: 2765+70	B87B  29292929		rept	7		;shift left 7
+ 507: 2735+13	B873  3A1CBC  		lda	seksec		;mask buffer number
+ 508: 2748+7	B876  E601    		ani	secmsk		;least signif bits
+ 509: 2755+5	B878  6F      		mov	l,a		;ready to shift
+ 510: 2760+7	B879  2600    		mvi	h,0		;double count
+ 511: 2767+70	B87B  29292929		rept	7		;shift left 7
 	              292929
  514:				;	hl has relative host buffer address
- 515: 2835+10	B882  112FBC  		lxi	d,hstbuf
- 516: 2845+10	B885  19      		dad	d		;hl = host address
- 517: 2855+4	B886  EB      		xchg			;now in DE
- 518: 2859+16	B887  2A2DBC  		lhld	dmaadr		;get/put CP/M data
- 519: 2875+7	B88A  0E80    		mvi	c,128		;length of move
- 520: 2882+13	B88C  3A2BBC  		lda	readop		;which way?
- 521: 2895+4	B88F  B7      		ora	a
- 522: 2899+10	B890  C299B8  		jnz	rwmove		;skip if read
+ 515: 2837+10	B882  112FBC  		lxi	d,hstbuf
+ 516: 2847+10	B885  19      		dad	d		;hl = host address
+ 517: 2857+4	B886  EB      		xchg			;now in DE
+ 518: 2861+16	B887  2A2DBC  		lhld	dmaadr		;get/put CP/M data
+ 519: 2877+7	B88A  0E80    		mvi	c,128		;length of move
+ 520: 2884+13	B88C  3A2BBC  		lda	readop		;which way?
+ 521: 2897+4	B88F  B7      		ora	a
+ 522: 2901+10	B890  C299B8  		jnz	rwmove		;skip if read
  523:				;
  524:				;	write operation, mark and switch direction
- 525: 2909+7	B893  3E01    		mvi	a,1
- 526: 2916+13	B895  3223BC  		sta	hstwrt		;hstwrt = 1
- 527: 2929+4	B898  EB      		xchg			;source/dest swap
+ 525: 2911+7	B893  3E01    		mvi	a,1
+ 526: 2918+13	B895  3223BC  		sta	hstwrt		;hstwrt = 1
+ 527: 2931+4	B898  EB      		xchg			;source/dest swap
  528:				;
  529:     -	B899          	rwmove:
  530:					;C initially 128, DE is source, HL is dest
- 531: 2933+7	B899  1A      		ldax	d		;source character
- 532: 2940+5	B89A  13      		inx	d
- 533: 2945+7	B89B  77      		mov	m,a		;to dest
- 534: 2952+5	B89C  23      		inx	h
- 535: 2957+5	B89D  0D      		dcr	c		;loop 128 times
- 536: 2962+10	B89E  C299B8  		jnz	rwmove
+ 531: 2935+7	B899  1A      		ldax	d		;source character
+ 532: 2942+5	B89A  13      		inx	d
+ 533: 2947+7	B89B  77      		mov	m,a		;to dest
+ 534: 2954+5	B89C  23      		inx	h
+ 535: 2959+5	B89D  0D      		dcr	c		;loop 128 times
+ 536: 2964+10	B89E  C299B8  		jnz	rwmove
  537:				;
  538:				;	data has been moved to/from host buffer
- 539: 2972+13	B8A1  3A2CBC  		lda	wrtype		;write type
- 540: 2985+7	B8A4  FE01    		cpi	wrdir		;to directory?
- 541: 2992+13	B8A6  3A29BC  		lda	erflag		;in case of errors
- 542: 3005+5+6	B8A9  C0      		rnz			;no further processing
+ 539: 2974+13	B8A1  3A2CBC  		lda	wrtype		;write type
+ 540: 2987+7	B8A4  FE01    		cpi	wrdir		;to directory?
+ 541: 2994+13	B8A6  3A29BC  		lda	erflag		;in case of errors
+ 542: 3007+5+6	B8A9  C0      		rnz			;no further processing
  543:				;
  544:				;	clear host buffer for directory write
- 545: 3010+4	B8AA  B7      		ora	a		;errors?
- 546: 3014+5+6	B8AB  C0      		rnz			;skip if so
- 547: 3019+4	B8AC  AF      		xra	a		;0 to accum
- 548: 3023+13	B8AD  3223BC  		sta	hstwrt		;buffer written
- 549: 3036+17	B8B0  CDC3B8  		call	writehst
- 550: 3053+13	B8B3  3A29BC  		lda	erflag
- 551: 3066+10	B8B6  C9      		ret
+ 545: 3012+4	B8AA  B7      		ora	a		;errors?
+ 546: 3016+5+6	B8AB  C0      		rnz			;skip if so
+ 547: 3021+4	B8AC  AF      		xra	a		;0 to accum
+ 548: 3025+13	B8AD  3223BC  		sta	hstwrt		;buffer written
+ 549: 3038+17	B8B0  CDC3B8  		call	writehst
+ 550: 3055+13	B8B3  3A29BC  		lda	erflag
+ 551: 3068+10	B8B6  C9      		ret
  552:				;
  553:				;*****************************************************
  554:				;*                                                   *
@@ -1279,17 +1279,17 @@
  557:				;*****************************************************
  558:     -	B8B7          	sektrkcmp:
  559:					;HL = .unatrk or .hsttrk, compare with sektrk
- 560: 3076+4	B8B7  EB      		xchg
- 561: 3080+10	B8B8  211ABC  		lxi	h,sektrk
- 562: 3090+7	B8BB  1A      		ldax	d		;low byte compare
- 563: 3097+7	B8BC  BE      		cmp	m		;same?
- 564: 3104+5+6	B8BD  C0      		rnz			;return if not
+ 560: 3078+4	B8B7  EB      		xchg
+ 561: 3082+10	B8B8  211ABC  		lxi	h,sektrk
+ 562: 3092+7	B8BB  1A      		ldax	d		;low byte compare
+ 563: 3099+7	B8BC  BE      		cmp	m		;same?
+ 564: 3106+5+6	B8BD  C0      		rnz			;return if not
  565:				;	low bytes equal, test high 1s
- 566: 3109+5	B8BE  13      		inx	d
- 567: 3114+5	B8BF  23      		inx	h
- 568: 3119+7	B8C0  1A      		ldax	d
- 569: 3126+7	B8C1  BE      		cmp	m	;sets flags
- 570: 3133+10	B8C2  C9      		ret
+ 566: 3111+5	B8BE  13      		inx	d
+ 567: 3116+5	B8BF  23      		inx	h
+ 568: 3121+7	B8C0  1A      		ldax	d
+ 569: 3128+7	B8C1  BE      		cmp	m	;sets flags
+ 570: 3135+10	B8C2  C9      		ret
  571:				;
  572:				;*****************************************************
  573:				;*                                                   *
@@ -1303,9 +1303,9 @@
  581:					;hstsec = host sect #. write "hstsiz" bytes
  582:					;from hstbuf and return error flag in erflag.
  583:					;return erflag non-zero if error
- 584: 3143+7	B8C3  F6FF    		ora	0FFh
- 585: 3150+13	B8C5  3229BC  		sta	erflag
- 586: 3163+10	B8C8  C9      		ret
+ 584: 3145+7	B8C3  F6FF    		ora	0FFh
+ 585: 3152+13	B8C5  3229BC  		sta	erflag
+ 586: 3165+10	B8C8  C9      		ret
  587:				
  588:				;
  589:     -	B8C9          	readhst:
@@ -1315,275 +1315,275 @@
  593:				;	lxi	d, crlf
  594:				;	call	print
  595:					
- 596: 3173+10	B8C9  DB0A    		in	fdcctrl		; Motor 1 on
+ 596: 3175+10	B8C9  DB0A    		in	fdcctrl		; Motor 1 on
  597:     -	B8CB  CBD7    		setb	2, a
- 598: 3183+10	B8CD  D30A    		out	fdcctrl
+ 598: 3185+10	B8CD  D30A    		out	fdcctrl
  599:				
- 600: 3193+17	B8CF  CD1DB9  		call	seektrk
+ 600: 3195+17	B8CF  CD1DB9  		call	seektrk
  601:					
- 602: 3210+17	B8D2  CDA9B9  		call	fdcwait
- 603: 3227+7	B8D5  3E46    		mvi	a, 046h		; Read sector MFM
- 604: 3234+17	B8D7  CDD6B9  		call	fdcio
- 605: 3251+17	B8DA  CD43B9  		call	dchrn		; Drive C H R N
+ 602: 3212+17	B8D2  CDA9B9  		call	fdcwait
+ 603: 3229+7	B8D5  3E46    		mvi	a, 046h		; Read sector MFM
+ 604: 3236+17	B8D7  CDD6B9  		call	fdcio
+ 605: 3253+17	B8DA  CD43B9  		call	dchrn		; Drive C H R N
  606:					
- 607: 3268+4	B8DD  F3      		di
+ 607: 3270+4	B8DD  F3      		di
  608:				
  609:					; Main read loop
- 610: 3272+10	B8DE  010B00  		lxi	b, fdcdata	; B = 0 C = port
- 611: 3282+10	B8E1  212FBC  		lxi	h, hstbuf
- 612: 3292+10	B8E4  DB31    	readl:	in	irqstat
- 613: 3302+4	B8E6  87      		add	a
+ 610: 3274+10	B8DE  010B00  		lxi	b, fdcdata	; B = 0 C = port
+ 611: 3284+10	B8E1  212FBC  		lxi	h, hstbuf
+ 612: 3294+10	B8E4  DB31    	readl:	in	irqstat
+ 613: 3304+4	B8E6  87      		add	a
  614:     -	B8E7  380A    		jrc	fdcret
- 615: 3306+10	B8E9  F2E4B8  		jp	p,readl
+ 615: 3308+10	B8E9  F2E4B8  		jp	p,readl
  616:     -	B8EC  EDA2    		ini
  617:     -	B8EE  20F4    		jrnz	readl
- 618: 3316+17	B8F0  CDE9B9  		call	fdctc		; Send TC
+ 618: 3318+17	B8F0  CDE9B9  		call	fdctc		; Send TC
  619:				
- 620: 3333+4	B8F3  FB      	fdcret	ei
- 621: 3337+17	B8F4  CDD6B9  		call	fdcio
+ 620: 3335+4	B8F3  FB      	fdcret	ei
+ 621: 3339+17	B8F4  CDD6B9  		call	fdcio
  622:					;push	psw
  623:					;call	phex
  624:					;pop	psw
- 625: 3354+7	B8F7  E6D8    		ani	0D8h		; Interested in bits 7,6,4,3
- 626: 3361+5	B8F9  47      		mov	b, a
- 627: 3366+17	B8FA  CDD6B9  		call	fdcio		; ST1
+ 625: 3356+7	B8F7  E6D8    		ani	0D8h		; Interested in bits 7,6,4,3
+ 626: 3363+5	B8F9  47      		mov	b, a
+ 627: 3368+17	B8FA  CDD6B9  		call	fdcio		; ST1
  628:					;push	psw
  629:					;call	phex
  630:					;pop	psw
- 631: 3383+4	B8FD  B0      		ora	b
- 632: 3387+5	B8FE  47      		mov	b, a
- 633: 3392+17	B8FF  CDD6B9  		call	fdcio		; ST2
+ 631: 3385+4	B8FD  B0      		ora	b
+ 632: 3389+5	B8FE  47      		mov	b, a
+ 633: 3394+17	B8FF  CDD6B9  		call	fdcio		; ST2
  634:					;push	psw
  635:					;call	phex
  636:					;pop	psw
- 637: 3409+7	B902  E63F    		ani	03Fh		; Interested in bits 5..0
- 638: 3416+4	B904  B0      		ora	b
- 639: 3420+5	B905  47      		mov	b, a
+ 637: 3411+7	B902  E63F    		ani	03Fh		; Interested in bits 5..0
+ 638: 3418+4	B904  B0      		ora	b
+ 639: 3422+5	B905  47      		mov	b, a
  640:					
- 641: 3425+17	B906  CDD6B9  		call	fdcio		; C
- 642: 3442+17	B909  CDD6B9  		call	fdcio		; H
- 643: 3459+17	B90C  CDD6B9  		call	fdcio		; R
- 644: 3476+17	B90F  CDD6B9  		call	fdcio		; N
+ 641: 3427+17	B906  CDD6B9  		call	fdcio		; C
+ 642: 3444+17	B909  CDD6B9  		call	fdcio		; H
+ 643: 3461+17	B90C  CDD6B9  		call	fdcio		; R
+ 644: 3478+17	B90F  CDD6B9  		call	fdcio		; N
  645:					
- 646: 3493+10	B912  DB0A    		in	fdcctrl		; Motor 1 off
+ 646: 3495+10	B912  DB0A    		in	fdcctrl		; Motor 1 off
  647:     -	B914  CB97    		res	2, a
- 648: 3503+10	B916  D30A    		out	fdcctrl
+ 648: 3505+10	B916  D30A    		out	fdcctrl
  649:					
- 650: 3513+5	B918  78      		mov	a, b
- 651: 3518+13	B919  3229BC  		sta	erflag
- 652: 3531+10	B91C  C9      		ret	
+ 650: 3515+5	B918  78      		mov	a, b
+ 651: 3520+13	B919  3229BC  		sta	erflag
+ 652: 3533+10	B91C  C9      		ret	
  653:				
  654:				
  655:     -	B91D          	seektrk:
- 656: 3541+17	B91D  CDA9B9  		call	fdcwait
- 657: 3558+7	B920  3E0F    		mvi	a, 00Fh		; SEEK
- 658: 3565+17	B922  CDD6B9  		call	fdcio
- 659: 3582+13	B925  3A1DBC  		lda	hstdsk		; Current disk
- 660: 3595+5	B928  3C      		inr	a
- 661: 3600+5	B929  47      		mov	b, a
- 662: 3605+13	B92A  3A1EBC  		lda	hsttrk
- 663: 3618+7	B92D  E620    		ani	020h		; high byte of 0..31 is side
- 664: 3625+4	B92F  1F      		rar			; Move bit D4 to D2
- 665: 3629+4	B930  1F      		rar
- 666: 3633+4	B931  1F      		rar
- 667: 3637+4	B932  B0      		ora	a, b
- 668: 3641+17	B933  CDD6B9  		call	fdcio
- 669: 3658+13	B936  3A1EBC  		lda	hsttrk		; Current track
- 670: 3671+17	B939  CDD6B9  		call	fdcio
+ 656: 3543+17	B91D  CDA9B9  		call	fdcwait
+ 657: 3560+7	B920  3E0F    		mvi	a, 00Fh		; SEEK
+ 658: 3567+17	B922  CDD6B9  		call	fdcio
+ 659: 3584+13	B925  3A1DBC  		lda	hstdsk		; Current disk
+ 660: 3597+5	B928  3C      		inr	a
+ 661: 3602+5	B929  47      		mov	b, a
+ 662: 3607+13	B92A  3A1EBC  		lda	hsttrk
+ 663: 3620+7	B92D  E620    		ani	020h		; high byte of 0..31 is side
+ 664: 3627+4	B92F  1F      		rar			; Move bit D4 to D2
+ 665: 3631+4	B930  1F      		rar
+ 666: 3635+4	B931  1F      		rar
+ 667: 3639+4	B932  B0      		ora	a, b
+ 668: 3643+17	B933  CDD6B9  		call	fdcio
+ 669: 3660+13	B936  3A1EBC  		lda	hsttrk		; Current track
+ 670: 3673+17	B939  CDD6B9  		call	fdcio
  671:				
- 672: 3688+10	B93C  DB31    	waitirq	in	portb
+ 672: 3690+10	B93C  DB31    	waitirq	in	portb
  673:     -	B93E  CB7F    		bit	7, a
  674:     -	B940  28FA    		jrz	waitirq
  675:				
- 676: 3698+10	B942  C9      		ret
+ 676: 3700+10	B942  C9      		ret
  677:				
- 678: 3708+13	B943  3A1DBC  	dchrn:	lda	hstdsk		; Disk 1..2
- 679: 3721+5	B946  3C      		inr	a		; 1..2 thank you!
- 680: 3726+5	B947  47      		mov	b, a
- 681: 3731+13	B948  3A20BC  		lda	hstsec
- 682: 3744+4	B94B  1F      		rar			; Move bit D4 to D2
- 683: 3748+4	B94C  1F      		rar
- 684: 3752+7	B94D  E604    		ani	004h
- 685: 3759+4	B94F  B0      		ora	a, b
- 686: 3763+17	B950  CDD6B9  		call	fdcio
+ 678: 3710+13	B943  3A1DBC  	dchrn:	lda	hstdsk		; Disk 1..2
+ 679: 3723+5	B946  3C      		inr	a		; 1..2 thank you!
+ 680: 3728+5	B947  47      		mov	b, a
+ 681: 3733+13	B948  3A20BC  		lda	hstsec
+ 682: 3746+4	B94B  1F      		rar			; Move bit D4 to D2
+ 683: 3750+4	B94C  1F      		rar
+ 684: 3754+7	B94D  E604    		ani	004h
+ 685: 3761+4	B94F  B0      		ora	a, b
+ 686: 3765+17	B950  CDD6B9  		call	fdcio
  687:					
- 688: 3780+13	B953  3A1EBC  		lda	hsttrk		; Cylinder
- 689: 3793+17	B956  CDD6B9  		call	fdcio
+ 688: 3782+13	B953  3A1EBC  		lda	hsttrk		; Cylinder
+ 689: 3795+17	B956  CDD6B9  		call	fdcio
  690:					
- 691: 3810+13	B959  3A20BC  		lda	hstsec
- 692: 3823+4	B95C  1F      		rar			; D4 to D0
- 693: 3827+4	B95D  1F      		rar
- 694: 3831+4	B95E  1F      		rar
- 695: 3835+4	B95F  1F      		rar
- 696: 3839+7	B960  E601    		ani	1
- 697: 3846+17	B962  CDD6B9  		call	fdcio
+ 691: 3812+13	B959  3A20BC  		lda	hstsec
+ 692: 3825+4	B95C  1F      		rar			; D4 to D0
+ 693: 3829+4	B95D  1F      		rar
+ 694: 3833+4	B95E  1F      		rar
+ 695: 3837+4	B95F  1F      		rar
+ 696: 3841+7	B960  E601    		ani	1
+ 697: 3848+17	B962  CDD6B9  		call	fdcio
  698:					
- 699: 3863+13	B965  3A20BC  		lda	hstsec		; Record
- 700: 3876+7	B968  E60F    		ani	00Fh		; 
- 701: 3883+5	B96A  3C      		inr	a		; 1..16
- 702: 3888+17	B96B  CDD6B9  		call	fdcio
+ 699: 3865+13	B965  3A20BC  		lda	hstsec		; Record
+ 700: 3878+7	B968  E60F    		ani	00Fh		; 
+ 701: 3885+5	B96A  3C      		inr	a		; 1..16
+ 702: 3890+17	B96B  CDD6B9  		call	fdcio
  703:					
- 704: 3905+7	B96E  3E01    		mvi	a, 1		; 256 bytes per sector
- 705: 3912+17	B970  CDD6B9  		call	fdcio
+ 704: 3907+7	B96E  3E01    		mvi	a, 1		; 256 bytes per sector
+ 705: 3914+17	B970  CDD6B9  		call	fdcio
  706:					
- 707: 3929+7	B973  3E10    		mvi	a, 16		; EOT
- 708: 3936+17	B975  CDD6B9  		call	fdcio
+ 707: 3931+7	B973  3E10    		mvi	a, 16		; EOT
+ 708: 3938+17	B975  CDD6B9  		call	fdcio
  709:					
- 710: 3953+7	B978  3E18    		mvi	a, 018h		; Gap Length
- 711: 3960+17	B97A  CDD6B9  		call	fdcio
+ 710: 3955+7	B978  3E18    		mvi	a, 018h		; Gap Length
+ 711: 3962+17	B97A  CDD6B9  		call	fdcio
  712:					
- 713: 3977+4	B97D  AF      		xra	a		; DTL
- 714: 3981+17	B97E  CDD6B9  		call	fdcio
- 715: 3998+10	B981  C9      		ret
+ 713: 3979+4	B97D  AF      		xra	a		; DTL
+ 714: 3983+17	B97E  CDD6B9  		call	fdcio
+ 715: 4000+10	B981  C9      		ret
  716:				
- 717: 4008+7	B982  3EFF    	fdcrst:	mvi	a, 0FFh		; Mode 3
- 718: 4015+10	B984  D333    		out	cmdb
- 719: 4025+7	B986  3EC1    		ld	a, 0C1h		; Specify input bits
- 720: 4032+10	B988  D333    		out	cmdb
+ 717: 4010+7	B982  3EFF    	fdcrst:	mvi	a, 0FFh		; Mode 3
+ 718: 4017+10	B984  D333    		out	cmdb
+ 719: 4027+7	B986  3EC1    		ld	a, 0C1h		; Specify input bits
+ 720: 4034+10	B988  D333    		out	cmdb
  721:					
- 722: 4042+10	B98A  DB0A    		in	fdcctrl
+ 722: 4044+10	B98A  DB0A    		in	fdcctrl
  723:     -	B98C  CBEF    		setb	5,a		; Reset pin
- 724: 4052+10	B98E  D30A    		out	fdcctrl
- 725: 4062+7	B990  0600    		mvi	b, 0
+ 724: 4054+10	B98E  D30A    		out	fdcctrl
+ 725: 4064+7	B990  0600    		mvi	b, 0
  726:     -	B992  10FE    	_fdr1:	djnz	_fdr1
  727:     -	B994  CBAF    		res	5,a
- 728: 4069+10	B996  D30A    		out	fdcctrl
+ 728: 4071+10	B996  D30A    		out	fdcctrl
  729:     -	B998  10FE    	_fdr2:	djnz	_fdr2
  730:				
- 731: 4079+7	B99A  3E03    		mvi	a, 03h		; Specify
- 732: 4086+17	B99C  CDD6B9  		call	fdcio
- 733: 4103+7	B99F  3EBF    		mvi	a, 0BFh		; Step rate, head unload time
- 734: 4110+17	B9A1  CDD6B9  		call	fdcio
- 735: 4127+7	B9A4  3E10    		mvi	a, 010h		; Head load time
- 736: 4134+10	B9A6  C3D6B9  		jmp	fdcio
+ 731: 4081+7	B99A  3E03    		mvi	a, 03h		; Specify
+ 732: 4088+17	B99C  CDD6B9  		call	fdcio
+ 733: 4105+7	B99F  3EBF    		mvi	a, 0BFh		; Step rate, head unload time
+ 734: 4112+17	B9A1  CDD6B9  		call	fdcio
+ 735: 4129+7	B9A4  3E10    		mvi	a, 010h		; Head load time
+ 736: 4136+10	B9A6  C3D6B9  		jmp	fdcio
  737:				
  738:     -	B9A9          	fdcwait:
- 739: 4144+10	B9A9  010000  		lxi	b, 0
+ 739: 4146+10	B9A9  010000  		lxi	b, 0
  740:					
- 741: 4154+10	B9AC  DB0C    	fdcwl	in	fdcstat
+ 741: 4156+10	B9AC  DB0C    	fdcwl	in	fdcstat
  742:					;push	psw
  743:					;call	phex
  744:					;lxi	d, bsbsbs
  745:					;call	print
  746:					;pop	psw
- 747: 4164+7	B9AE  E6C0    		and	0C0h		; RQM, DIO and seek status
- 748: 4171+7	B9B0  FE80    		cpi	080h
- 749: 4178+5+6	B9B2  C8      		rz
+ 747: 4166+7	B9AE  E6C0    		and	0C0h		; RQM, DIO and seek status
+ 748: 4173+7	B9B0  FE80    		cpi	080h
+ 749: 4180+5+6	B9B2  C8      		rz
  750:					
- 751: 4183+5	B9B3  0B      		dcx	b
- 752: 4188+5	B9B4  78      		mov	a, b
- 753: 4193+4	B9B5  B1      		ora	c
+ 751: 4185+5	B9B3  0B      		dcx	b
+ 752: 4190+5	B9B4  78      		mov	a, b
+ 753: 4195+4	B9B5  B1      		ora	c
  754:     -	B9B6  20F4    		jrnz	fdcwl
  755:					
- 756: 4197+10	B9B8  DB0A    		in	fdcctrl
+ 756: 4199+10	B9B8  DB0A    		in	fdcctrl
  757:     -	B9BA  CBEF    		setb	5, a
- 758: 4207+10	B9BC  D30A    		out	fdcctrl
- 759: 4217+17	B9BE  CDCFB9  		call	wait
+ 758: 4209+10	B9BC  D30A    		out	fdcctrl
+ 759: 4219+17	B9BE  CDCFB9  		call	wait
  760:     -	B9C1  CBAF    		res	5, a
- 761: 4234+10	B9C3  D30A    		out	fdcctrl
- 762: 4244+17	B9C5  CDCFB9  		call	wait
+ 761: 4236+10	B9C3  D30A    		out	fdcctrl
+ 762: 4246+17	B9C5  CDCFB9  		call	wait
  763:				
- 764: 4261+7	B9C8  0E2E    		mvi	c, '.'
- 765: 4268+17	B9CA  CDE7B6  		call	conout
+ 764: 4263+7	B9C8  0E2E    		mvi	c, '.'
+ 765: 4270+17	B9CA  CDE7B6  		call	conout
  766:     -	B9CD  18DD    		jr	fdcwl
  767:				
- 768: 4285+5	B9CF  0B      	wait	dcx	b
- 769: 4290+5	B9D0  78      		mov	a, b
- 770: 4295+4	B9D1  B1      		ora	c
- 771: 4299+10	B9D2  C2CFB9  		jnz	wait
- 772: 4309+10	B9D5  C9      		ret
+ 768: 4287+5	B9CF  0B      	wait	dcx	b
+ 769: 4292+5	B9D0  78      		mov	a, b
+ 770: 4297+4	B9D1  B1      		ora	c
+ 771: 4301+10	B9D2  C2CFB9  		jnz	wait
+ 772: 4311+10	B9D5  C9      		ret
  773:				
  774:     -	B9D6          	fdcio:
- 775: 4319+11	B9D6  F5      		push	psw
- 776: 4330+10	B9D7  DB0C    	fdcwl1:	in	fdcstat
+ 775: 4321+11	B9D6  F5      		push	psw
+ 776: 4332+10	B9D7  DB0C    	fdcwl1:	in	fdcstat
  777:     -	B9D9  CB7F    		bit	7,a
  778:     -	B9DB  28FA    		jrz	fdcwl1
  779:     -	B9DD  CB77    		bit	6,a
  780:     -	B9DF  2004    		jrnz	fdcio1
- 781: 4340+10	B9E1  F1      		pop	psw
- 782: 4350+10	B9E2  D30B    		out	fdcdata
+ 781: 4342+10	B9E1  F1      		pop	psw
+ 782: 4352+10	B9E2  D30B    		out	fdcdata
  783:					;jmp	phex
- 784: 4360+10	B9E4  C9      		ret
+ 784: 4362+10	B9E4  C9      		ret
  785:					
- 786: 4370+10	B9E5  F1      	fdcio1:	pop	psw
- 787: 4380+10	B9E6  DB0B    		in	fdcdata
+ 786: 4372+10	B9E5  F1      	fdcio1:	pop	psw
+ 787: 4382+10	B9E6  DB0B    		in	fdcdata
  788:					;push	psw
  789:					;call	phex
  790:					;pop	psw
- 791: 4390+10	B9E8  C9      		ret
+ 791: 4392+10	B9E8  C9      		ret
  792:					
- 793: 4400+10	B9E9  DB0A    	fdctc:	in	fdcctrl		; Pulse TC bit
+ 793: 4402+10	B9E9  DB0A    	fdctc:	in	fdcctrl		; Pulse TC bit
  794:     -	B9EB  CBE7    		setb	4, a
- 795: 4410+10	B9ED  D30A    		out	fdcctrl
+ 795: 4412+10	B9ED  D30A    		out	fdcctrl
  796:     -	B9EF  CBA7    		res	4, a
- 797: 4420+10	B9F1  D30A    		out	fdcctrl
- 798: 4430+10	B9F3  C9      		ret
+ 797: 4422+10	B9F1  D30A    		out	fdcctrl
+ 798: 4432+10	B9F3  C9      		ret
  799:				
  800:					; Print the message at HL
- 801: 4440+7	B9F4  1A      	print	ldax	d
- 802: 4447+5	B9F5  4F      		mov	c, a
- 803: 4452+5	B9F6  13      		inx	d
- 804: 4457+4	B9F7  B7      		ora	a
- 805: 4461+5+6	B9F8  C8      		rz
- 806: 4466+17	B9F9  CDE7B6  		call	conout
- 807: 4483+10	B9FC  C3F4B9  		jmp	print
+ 801: 4442+7	B9F4  1A      	print	ldax	d
+ 802: 4449+5	B9F5  4F      		mov	c, a
+ 803: 4454+5	B9F6  13      		inx	d
+ 804: 4459+4	B9F7  B7      		ora	a
+ 805: 4463+5+6	B9F8  C8      		rz
+ 806: 4468+17	B9F9  CDE7B6  		call	conout
+ 807: 4485+10	B9FC  C3F4B9  		jmp	print
  808:				
  809:					
- 810: 4493+4	B9FF  F3      	kbinit:	di
+ 810: 4495+4	B9FF  F3      	kbinit:	di
  811:     -	BA00  ED5E    		im2
- 812: 4497+7	BA02  3E07    		mvi	a, 07h		; Disable interrupts
- 813: 4504+10	BA04  D332    		out	cmda
- 814: 4514+10	BA06  D333    		out	cmdb
+ 812: 4499+7	BA02  3E07    		mvi	a, 07h		; Disable interrupts
+ 813: 4506+10	BA04  D332    		out	cmda
+ 814: 4516+10	BA06  D333    		out	cmdb
  815:					
- 816: 4524+7	BA08  3E96    		mvi	a, (low irqtab)
- 817: 4531+10	BA0A  D332    		out	cmda
- 818: 4541+10	BA0C  D333    		out	cmdb
- 819: 4551+7	BA0E  3EBB    		mvi	a, (high irqtab)
+ 816: 4526+7	BA08  3E96    		mvi	a, (low irqtab)
+ 817: 4533+10	BA0A  D332    		out	cmda
+ 818: 4543+10	BA0C  D333    		out	cmdb
+ 819: 4553+7	BA0E  3EBB    		mvi	a, (high irqtab)
  820:     -	BA10  ED47    		stai
  821:					
- 822: 4558+7	BA12  3E4F    		mvi	a, 04Fh		; Set mode
- 823: 4565+10	BA14  D332    		out	cmda
- 824: 4575+7	BA16  3E87    		mvi	a, 087h		; Enable interrupts for PORTA
- 825: 4582+10	BA18  D332    		out	cmda
+ 822: 4560+7	BA12  3E4F    		mvi	a, 04Fh		; Set mode
+ 823: 4567+10	BA14  D332    		out	cmda
+ 824: 4577+7	BA16  3E87    		mvi	a, 087h		; Enable interrupts for PORTA
+ 825: 4584+10	BA18  D332    		out	cmda
  826:					
- 827: 4592+7	BA1A  3EFF    		mvi	a, 0FFh
- 828: 4599+10	BA1C  D333    		out	cmdb
- 829: 4609+7	BA1E  3EC1    		mvi	a, 0C1h		; Input bits
- 830: 4616+10	BA20  D333    		out	cmdb
+ 827: 4594+7	BA1A  3EFF    		mvi	a, 0FFh
+ 828: 4601+10	BA1C  D333    		out	cmdb
+ 829: 4611+7	BA1E  3EC1    		mvi	a, 0C1h		; Input bits
+ 830: 4618+10	BA20  D333    		out	cmdb
  831:					
- 832: 4626+4	BA22  AF      		xra	a
- 833: 4630+10	BA23  D331    		out	portb
- 834: 4640+13	BA25  32B8BB  		sta	inptr
- 835: 4653+13	BA28  32B9BB  		sta	outptr
+ 832: 4628+4	BA22  AF      		xra	a
+ 833: 4632+10	BA23  D331    		out	portb
+ 834: 4642+13	BA25  32B8BB  		sta	inptr
+ 835: 4655+13	BA28  32B9BB  		sta	outptr
  836:					
- 837: 4666+10	BA2B  DB30    		in	porta
- 838: 4676+10	BA2D  DB31    		in	portb
+ 837: 4668+10	BA2B  DB30    		in	porta
+ 838: 4678+10	BA2D  DB31    		in	portb
  839:					
- 840: 4686+4	BA2F  FB      		ei
- 841: 4690+10	BA30  C9      		ret
+ 840: 4688+4	BA2F  FB      		ei
+ 841: 4692+10	BA30  C9      		ret
  842:					
- 843: 4700+11	BA31  F5      	kbirq:	push	psw
- 844: 4711+11	BA32  E5      		push	h
- 845: 4722+11	BA33  D5      		push	d
- 846: 4733+11	BA34  C5      		push	b
+ 843: 4702+11	BA31  F5      	kbirq:	push	psw
+ 844: 4713+11	BA32  E5      		push	h
+ 845: 4724+11	BA33  D5      		push	d
+ 846: 4735+11	BA34  C5      		push	b
  847:					
- 848: 4744+13	BA35  3AB8BB  		lda	inptr
- 849: 4757+5	BA38  5F      		mov	e, a
- 850: 4762+7	BA39  1600    		mvi	d, 0
- 851: 4769+10	BA3B  2198BB  		lxi	h, buffer
- 852: 4779+10	BA3E  19      		dad	d
- 853: 4789+5	BA3F  3C      		inr	a
- 854: 4794+7	BA40  E61F    		ani	31		; Modulo 32
- 855: 4801+13	BA42  32B8BB  		sta	inptr
+ 848: 4746+13	BA35  3AB8BB  		lda	inptr
+ 849: 4759+5	BA38  5F      		mov	e, a
+ 850: 4764+7	BA39  1600    		mvi	d, 0
+ 851: 4771+10	BA3B  2198BB  		lxi	h, buffer
+ 852: 4781+10	BA3E  19      		dad	d
+ 853: 4791+5	BA3F  3C      		inr	a
+ 854: 4796+7	BA40  E61F    		ani	31		; Modulo 32
+ 855: 4803+13	BA42  32B8BB  		sta	inptr
  856:					
- 857: 4814+10	BA45  DB30    		in	porta
- 858: 4824+7	BA47  77      		mov	m, a
+ 857: 4816+10	BA45  DB30    		in	porta
+ 858: 4826+7	BA47  77      		mov	m, a
  859:					
- 860: 4831+10	BA48  C1      		pop	b
- 861: 4841+10	BA49  D1      		pop	d
- 862: 4851+10	BA4A  E1      		pop	h
- 863: 4861+10	BA4B  F1      		pop	psw
- 864: 4871+4	BA4C  FB      		ei
+ 860: 4833+10	BA48  C1      		pop	b
+ 861: 4843+10	BA49  D1      		pop	d
+ 862: 4853+10	BA4A  E1      		pop	h
+ 863: 4863+10	BA4B  F1      		pop	psw
+ 864: 4873+4	BA4C  FB      		ei
  865:     -	BA4D  ED4D    		reti
  866:				
  867:     -	BA4F  34376B20	mesg	db	"47k CP/M 2.2"

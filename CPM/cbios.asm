@@ -188,7 +188,7 @@ conin	call	const		; Wait for availability
 	inr	a
 	ani	31		; Modulo 32
 	sta	outptr
-	mov	e, a
+	mov	e, m
 	mvi	d, 0
 	lxi	h, keytab	; Get scancode translation from keytab
 	dad	d
