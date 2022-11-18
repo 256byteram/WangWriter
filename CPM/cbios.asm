@@ -592,23 +592,41 @@ readhst:
 	;into hstbuf and return error flag in erflag.
 ;	lxi	d, crlf
 ;	call	print
+	lxi	h, retry
+	mvi	m, 3		; Retry attempts
 	
+
+readhst$loop:
+	call	readhst$main
+	ora	a
+	rz
+	call	fdcrst
+	lxi	h, retry
+	dcr	m
+	jrnz	readhst$loop
+	mvi	a, 1		; Return with error
+	sta	erflag
+	ret
+	
+	;
+	; Main read hoast function
+	;
+readhst$main:
 	in	fdcctrl		; Motor 1 on
 	setb	2, a
 	out	fdcctrl
 
 	call	seektrk
-	
+		
 	call	fdcwait
+	di
 	mvi	a, 046h		; Read sector MFM
+	lxi	b, fdcdata	; B = 0 C = port
+	lxi	h, hstbuf
 	call	fdcio
 	call	dchrn		; Drive C H R N
 	
-	di
-
 	; Main read loop
-	lxi	b, fdcdata	; B = 0 C = port
-	lxi	h, hstbuf
 readl:	in	irqstat
 	add	a
 	jrc	fdcret
@@ -617,23 +635,15 @@ readl:	in	irqstat
 	jrnz	readl
 	call	fdctc		; Send TC
 
-fdcret	ei
+	; Exit read/write function here
+fdcret:	ei
 	call	fdcio
-	;push	psw
-	;call	phex
-	;pop	psw
 	ani	0D8h		; Interested in bits 7,6,4,3
 	mov	b, a
 	call	fdcio		; ST1
-	;push	psw
-	;call	phex
-	;pop	psw
 	ora	b
 	mov	b, a
 	call	fdcio		; ST2
-	;push	psw
-	;call	phex
-	;pop	psw
 	ani	03Fh		; Interested in bits 5..0
 	ora	b
 	mov	b, a
@@ -650,7 +660,6 @@ fdcret	ei
 	mov	a, b
 	sta	erflag
 	ret	
-
 
 seektrk:
 	call	fdcwait
@@ -893,6 +902,7 @@ stack:
 ;	jmp	conout
 ;	ret
 	
+retry:	db	0		;error retry counter
 
 keytab:	
 	db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h

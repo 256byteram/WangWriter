@@ -32,9 +32,9 @@
   32:  191+7	022A  3E17    		ld	a,0x17
   33:  198+11	022C  D346    		out	(0x46),a
   34:					
-  35:  209+10	022E  214402  		ld	hl, cpm
+  35:  209+10	022E  218002  		ld	hl, cpm
   36:  219+7	0231  1E00    		ld	e, 0
-  37:  226+13	0233  3A4602  		ld	a, (cpm+2)	; Page vector for CP/M image
+  37:  226+13	0233  3A8202  		ld	a, (cpm+2)	; Page vector for CP/M image
   38:  239+7	0236  D603    		sui	3
   39:  246+4	0238  57      		mov	d, a
   40:  250+10	0239  01001C  		ld	bc, 7168	; Size
@@ -45,9 +45,23 @@
   45:  290+4	0242  67      		ld	h, a
   46:  294+4	0243  E9      		jp	(hl)
   47:					
-  48:					rept	(0x200 - $)
+  48:     -	0244  00000000		rept	(0x280 - $)
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
+	              00000000
   51:					
-  52:     -	0244          	cpm	equ	$
+  52:     -	0280          	cpm	equ	$
   53:				
   54:				
 
@@ -58,9 +72,9 @@ Statistics:
      4	passes
      0	jr promotions
      8	symbols
-    68	bytes
+   128	bytes
 
-     0	macro calls
+    60	macro calls
     13	macro bytes
      0	invented symbols
 
@@ -74,5 +88,5 @@ DISPLAY        =5F        95
 PORTA          =30        48
 PORTB          =31        49
 UBS            =03        3
-cpm            = 244      580
+cpm            = 280      640
 entry            200      512

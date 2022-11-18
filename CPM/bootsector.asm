@@ -45,7 +45,7 @@ entry:	di
 	ld	h, a
 	jp	(hl)
 	
-	rept	(0x200 - $)
+	rept	(0x280 - $)
 	db	0
 	endm
 	

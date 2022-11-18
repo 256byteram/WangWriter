@@ -51,8 +51,6 @@ CBASE	JMP	COMMAND		;execute command processor (ccp).
 ;
 INBUFF	DB	127	;length of input buffer.
 	DB	0	;current length of contents.
-	DB	32,32,32,32,32,32
-	DB	32,32,32,32,32,32,32,32,32,32
 	DB	"Copyright"
 	DB	" 1979 (c) by Digital Research      "
 	DB	0,0,0,0,0,0,0,0,0,0,0,0
@@ -60,7 +58,8 @@ INBUFF	DB	127	;length of input buffer.
 	DB	0,0,0,0,0,0,0,0,0,0,0,0
 	DB	0,0,0,0,0,0,0,0,0,0,0,0
 	DB	0,0,0,0,0,0,0,0,0,0,0,0
-	DB	0,0,0,0,0,0,0,0
+	DB	0,0,0,0,0,0,0,0,0,0,0,0
+	DB	0,0,0,0,0,0,0,0,0,0,0,0
 INPOINT	DW	INBUFF+2;input line pointer
 NAMEPNT	DW	0	;input line pointer used for error message. Points to
 ;			;start of name in error.

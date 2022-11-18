@@ -60,7 +60,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="CPM/cpm22.asm|CPM/cbios.asm|CPM/bootsector.asm|CPM/blank.asm|filedialog/nfd_zenity.c|filedialog/nfd_gtk.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="keyboard/keyboard.asm|CPM/cpm22.asm|CPM/cbios.asm|CPM/bootsector.asm|CPM/blank.asm|filedialog/nfd_zenity.c|filedialog/nfd_gtk.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -186,7 +186,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="CPM/cpm22.asm|CPM/cbios.asm|CPM/bootsector.asm|CPM/blank.asm|filedialog/nfd_zenity.c|filedialog/nfd_win.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="keyboard/keyboard.asm|CPM/cpm22.asm|CPM/cbios.asm|CPM/bootsector.asm|CPM/blank.asm|filedialog/nfd_zenity.c|filedialog/nfd_win.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

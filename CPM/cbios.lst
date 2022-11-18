@@ -822,22 +822,22 @@
   94:				;
   95:				;	individual subroutines to perform each function
   96:  170+4	B633  F3      	boot:	di
-  97:  174+10	B634  3186BA  		lxi	sp, stack
+  97:  174+10	B634  319FBA  		lxi	sp, stack
   98:  184+7	B637  3E01    		mvi	a, 01h		;CRT is the default device
   99:  191+13	B639  320300  		sta	iobyte		;clear the iobyte
  100:  204+4	B63C  AF      		xra	a		;zero in the accum
  101:  208+13	B63D  320400  		sta	cdisk		;select disk zero
- 102:  221+13	B640  3222BC  		sta	hstact		;host buffer inactive
- 103:  234+13	B643  3224BC  		sta	unacnt		;clear unalloc count
- 104:  247+10	B646  114FBA  		lxi	d,mesg		; Signon message
- 105:  257+17	B649  CDF4B9  		call	print
- 106:  274+17	B64C  CD82B9  		call	fdcrst		;Initialise FDC
+ 102:  221+13	B640  323CBC  		sta	hstact		;host buffer inactive
+ 103:  234+13	B643  323EBC  		sta	unacnt		;clear unalloc count
+ 104:  247+10	B646  1168BA  		lxi	d,mesg		; Signon message
+ 105:  257+17	B649  CD0DBA  		call	print
+ 106:  274+17	B64C  CD9BB9  		call	fdcrst		;Initialise FDC
  107:  291+10	B64F  C396B6  		jmp	gocpm		;initialize and go to cp/m
  108:				;
  109:     -	B652          	wboot:	;simplest case is to read the disk until all sectors loaded
  110:  301+4	B652  F3      		di
  111:  305+10	B653  318000  		lxi	sp, 80h		;use space below buffer for stack
- 112:  315+17	B656  CD82B9  		call	fdcrst		;Initialise FDC
+ 112:  315+17	B656  CD9BB9  		call	fdcrst		;Initialise FDC
  113:  332+7	B659  0E00    		mvi	c, 0		;select disk 0
  114:  339+17	B65B  CD78B7  		call	seldsk
  115:  356+17	B65E  CD5BB7  		call	home		;go to track 00
@@ -852,11 +852,11 @@
  124:  411+10	B66C  110100  		lxi	d, 1
  125:  421+7	B66F  065F    		mvi	b, (0FFFFh-ccp)/hstsiz
  126:  428+5	B671  7B      	rdloop	mov	a, e
- 127:  433+13	B672  3220BC  		sta	hstsec
+ 127:  433+13	B672  323ABC  		sta	hstsec
  128:  446+5	B675  7A      		mov	a, d
- 129:  451+13	B676  321EBC  		sta	hsttrk
+ 129:  451+13	B676  3238BC  		sta	hsttrk
  130:  464+7	B679  3E00    		mvi	a, 0
- 131:  471+13	B67B  321FBC  		sta	hsttrk+1
+ 131:  471+13	B67B  3239BC  		sta	hsttrk+1
  132:  484+11	B67E  C5      		push	bc
  133:  495+11	B67F  D5      		push	de
  134:  506+17	B680  CDC9B8  		call	readhst
@@ -873,7 +873,7 @@
  145:  596+10	B693  F271B6  		jp	rdloop
  146:				;
  147:				;	end of	load operation, set parameters and go to cp/m
- 148:  606+17	B696  CDFFB9  	gocpm:	call	kbinit
+ 148:  606+17	B696  CD18BA  	gocpm:	call	kbinit
  149:  623+7	B699  3EC3    		mvi	a, 0c3h		;c3 is a jmp instruction
  150:  630+13	B69B  320000  		sta	0		;for jmp to wboot
  151:  643+10	B69E  2103B6  		lxi	h, wboote	;wboot entry point
@@ -896,9 +896,9 @@
  168:				; 
  169:				
  170:				; Console status
- 171:  767+13	B6BB  3AB8BB  	const:	lda	inptr		; If inptr and outptr are the same
+ 171:  767+13	B6BB  3AD2BB  	const:	lda	inptr		; If inptr and outptr are the same
  172:  780+5	B6BE  47      		mov	b, a
- 173:  785+13	B6BF  3AB9BB  		lda	outptr
+ 173:  785+13	B6BF  3AD3BB  		lda	outptr
  174:  798+4	B6C2  B8      		cmp	b
  175:  802+7	B6C3  3E00    		mvi	a, 0
  176:  809+5+6	B6C5  C8      		rz			; Return with no characters ready
@@ -908,17 +908,17 @@
  180:				; Console in
  181:  831+17	B6C9  CDBBB6  	conin	call	const		; Wait for availability
  182:     -	B6CC  28FB    		jrz	conin
- 183:  848+13	B6CE  3AB9BB  		lda	outptr
+ 183:  848+13	B6CE  3AD3BB  		lda	outptr
  184:  861+5	B6D1  5F      		mov	e, a		; Offset within buffer
  185:  866+7	B6D2  1600    		mvi	d, 0
- 186:  873+10	B6D4  2198BB  		lxi	h, buffer	; Buffer origin
+ 186:  873+10	B6D4  21B2BB  		lxi	h, buffer	; Buffer origin
  187:  883+10	B6D7  19      		dad	d
  188:  893+5	B6D8  3C      		inr	a
  189:  898+7	B6D9  E61F    		ani	31		; Modulo 32
- 190:  905+13	B6DB  32B9BB  		sta	outptr
+ 190:  905+13	B6DB  32D3BB  		sta	outptr
  191:  918+7	B6DE  5E      		mov	e, m
  192:  925+7	B6DF  1600    		mvi	d, 0
- 193:  932+10	B6E1  2186BA  		lxi	h, keytab	; Get scancode translation from keytab
+ 193:  932+10	B6E1  21A0BA  		lxi	h, keytab	; Get scancode translation from keytab
  194:  942+10	B6E4  19      		dad	d
  195:  952+7	B6E5  7E      		mov	a, m
  196:  959+10	B6E6  C9      		ret
@@ -1022,30 +1022,30 @@
  294:				;	in the read and write	subroutines
  295:				;
  296:					;home the selected disk
- 297: 1481+13	B75B  3A23BC  	home:	lda	hstwrt	;check for pending write
+ 297: 1481+13	B75B  3A3DBC  	home:	lda	hstwrt	;check for pending write
  298: 1494+4	B75E  B7      		ora	a
  299: 1498+10	B75F  C265B7  		jnz	homed
- 300: 1508+13	B762  3222BC  		sta	hstact	;clear host active flag
+ 300: 1508+13	B762  323CBC  		sta	hstact	;clear host active flag
  301: 1521+10	B765  010000  	homed:	lxi	b, 0
  302: 1531+17	B768  CD88B7  		call	settrk
  303:					
  304: 1548+7	B76B  3E07    		mvi	a, 007h		; Recalibrate
- 305: 1555+17	B76D  CDD6B9  		call	fdcio
+ 305: 1555+17	B76D  CDEFB9  		call	fdcio
  306: 1572+7	B770  3E01    		mvi	a, 1		; Permanently on drive 1 for now
- 307: 1579+17	B772  CDD6B9  		call	fdcio
+ 307: 1579+17	B772  CDEFB9  		call	fdcio
  308:					
- 309: 1596+10	B775  C33CB9  		jmp	waitirq
+ 309: 1596+10	B775  C355B9  		jmp	waitirq
  310:					
  311:					;ret
  312:				;
  313:     -	B778          	seldsk:
  314:					;select disk
  315: 1606+5	B778  79      		mov	a,c		;selected disk number
- 316: 1611+13	B779  3219BC  		sta	sekdsk		;seek disk number
+ 316: 1611+13	B779  3233BC  		sta	sekdsk		;seek disk number
  317: 1624+5	B77C  6F      		mov	l,a		;disk number to HL
  318: 1629+7	B77D  2600    		mvi	h,0
  319: 1636+40	B77F  29292929		rept	4		;multiply by 16
- 322: 1676+10	B783  11BABB  		lxi	d,dpbase	;base of parm block
+ 322: 1676+10	B783  11D4BB  		lxi	d,dpbase	;base of parm block
  323: 1686+10	B786  19      		dad	d		;hl=.dpb(curdsk)
  324: 1696+10	B787  C9      		ret
  325:					;
@@ -1053,13 +1053,13 @@
  327:					;mov	h,b
  328: 1706+7	B788  2600    		mvi	h,0
  329: 1713+5	B78A  69      		mov	l,c
- 330: 1718+16	B78B  221ABC  		shld	sektrk
+ 330: 1718+16	B78B  2234BC  		shld	sektrk
  331: 1734+10	B78E  C9      		ret
  332:				;
  333:     -	B78F          	setsec:
  334:					;set sector given by register c 
  335: 1744+5	B78F  79      		mov	a,c
- 336: 1749+13	B790  321CBC  		sta	seksec		;sector to seek
+ 336: 1749+13	B790  3236BC  		sta	seksec		;sector to seek
  337:					;jmp	phex
  338: 1762+10	B793  C9      		ret
  339:				
@@ -1067,7 +1067,7 @@
  341:					;set dma address given by BC
  342: 1772+5	B794  60      		mov	h,b
  343: 1777+5	B795  69      		mov	l,c
- 344: 1782+16	B796  222DBC  		shld	dmaadr
+ 344: 1782+16	B796  2247BC  		shld	dmaadr
  345: 1798+10	B799  C9      		ret
  346:				;
  347:     -	B79A          	sectran:
@@ -1085,12 +1085,12 @@
  359:     -	B79D          	read:
  360:					;read the selected CP/M sector
  361: 1828+4	B79D  AF      		xra	a
- 362: 1832+13	B79E  3224BC  		sta	unacnt
+ 362: 1832+13	B79E  323EBC  		sta	unacnt
  363: 1845+7	B7A1  3E01    		mvi	a,1
- 364: 1852+13	B7A3  322BBC  		sta	readop		;read operation
- 365: 1865+13	B7A6  322ABC  		sta	rsflag		;must read data
+ 364: 1852+13	B7A3  3245BC  		sta	readop		;read operation
+ 365: 1865+13	B7A6  3244BC  		sta	rsflag		;must read data
  366: 1878+7	B7A9  3E02    		mvi	a,wrual
- 367: 1885+13	B7AB  322CBC  		sta	wrtype		;treat as unalloc
+ 367: 1885+13	B7AB  3246BC  		sta	wrtype		;treat as unalloc
  368: 1898+10	B7AE  C31CB8  		jmp	rwoper		;to perform the read
  369:				;
  370:				;*****************************************************
@@ -1102,44 +1102,44 @@
  376:     -	B7B1          	write:
  377:					;write the selected CP/M sector
  378: 1908+4	B7B1  AF      		xra	a		;0 to accumulator
- 379: 1912+13	B7B2  322BBC  		sta	readop		;not a read operation
+ 379: 1912+13	B7B2  3245BC  		sta	readop		;not a read operation
  380: 1925+5	B7B5  79      		mov	a,c		;write type in c
- 381: 1930+13	B7B6  322CBC  		sta	wrtype
+ 381: 1930+13	B7B6  3246BC  		sta	wrtype
  382: 1943+7	B7B9  FE02    		cpi	wrual		;write unallocated?
  383: 1950+10	B7BB  C2D5B7  		jnz	chkuna		;check for unalloc
  384:				;
  385:				;	write to unallocated, set parameters
  386: 1960+7	B7BE  3E10    		mvi	a,blksiz/128	;next unalloc recs
- 387: 1967+13	B7C0  3224BC  		sta	unacnt
- 388: 1980+13	B7C3  3A19BC  		lda	sekdsk		;disk to seek
- 389: 1993+13	B7C6  3225BC  		sta	unadsk		;unadsk = sekdsk
- 390: 2006+16	B7C9  2A1ABC  		lhld	sektrk
- 391: 2022+16	B7CC  2226BC  		shld	unatrk		;unatrk = sectrk
- 392: 2038+13	B7CF  3A1CBC  		lda	seksec
- 393: 2051+13	B7D2  3228BC  		sta	unasec		;unasec = seksec
+ 387: 1967+13	B7C0  323EBC  		sta	unacnt
+ 388: 1980+13	B7C3  3A33BC  		lda	sekdsk		;disk to seek
+ 389: 1993+13	B7C6  323FBC  		sta	unadsk		;unadsk = sekdsk
+ 390: 2006+16	B7C9  2A34BC  		lhld	sektrk
+ 391: 2022+16	B7CC  2240BC  		shld	unatrk		;unatrk = sectrk
+ 392: 2038+13	B7CF  3A36BC  		lda	seksec
+ 393: 2051+13	B7D2  3242BC  		sta	unasec		;unasec = seksec
  394:				;
  395:     -	B7D5          	chkuna:
  396:					;check for write to unallocated sector
- 397: 2064+13	B7D5  3A24BC  		lda	unacnt		;any unalloc remain?
+ 397: 2064+13	B7D5  3A3EBC  		lda	unacnt		;any unalloc remain?
  398: 2077+4	B7D8  B7      		ora	a
  399: 2081+10	B7D9  CA14B8  		jz	alloc		;skip if not
  400:				;
  401:				;	more unallocated records remain
  402: 2091+5	B7DC  3D      		dcr	a		;unacnt = unacnt-1
- 403: 2096+13	B7DD  3224BC  		sta	unacnt
- 404: 2109+13	B7E0  3A19BC  		lda	sekdsk		;same disk?
- 405: 2122+10	B7E3  2125BC  		lxi	h,unadsk
+ 403: 2096+13	B7DD  323EBC  		sta	unacnt
+ 404: 2109+13	B7E0  3A33BC  		lda	sekdsk		;same disk?
+ 405: 2122+10	B7E3  213FBC  		lxi	h,unadsk
  406: 2132+7	B7E6  BE      		cmp	m		;sekdsk = unadsk?
  407: 2139+10	B7E7  C214B8  		jnz	alloc		;skip if not
  408:				;
  409:				;	disks are the same
- 410: 2149+10	B7EA  2126BC  		lxi	h,unatrk
+ 410: 2149+10	B7EA  2140BC  		lxi	h,unatrk
  411: 2159+17	B7ED  CDB7B8  		call	sektrkcmp	;sektrk = unatrk?
  412: 2176+10	B7F0  C214B8  		jnz	alloc		;skip if not
  413:				;
  414:				;	tracks are the same
- 415: 2186+13	B7F3  3A1CBC  		lda	seksec		;same sector?
- 416: 2199+10	B7F6  2128BC  		lxi	h,unasec
+ 415: 2186+13	B7F3  3A36BC  		lda	seksec		;same sector?
+ 416: 2199+10	B7F6  2142BC  		lxi	h,unasec
  417: 2209+7	B7F9  BE      		cmp	m		;seksec = unasec?
  418: 2216+10	B7FA  C214B8  		jnz	alloc		;skip if not
  419:				;
@@ -1151,22 +1151,22 @@
  425:				;
  426:				;	overflow to next track
  427: 2260+10	B804  3600    		mvi	m,0		;unasec = 0
- 428: 2270+16	B806  2A26BC  		lhld	unatrk
+ 428: 2270+16	B806  2A40BC  		lhld	unatrk
  429: 2286+5	B809  23      		inx	h
- 430: 2291+16	B80A  2226BC  		shld	unatrk		;unatrk = unatrk+1
+ 430: 2291+16	B80A  2240BC  		shld	unatrk		;unatrk = unatrk+1
  431:				;
  432:     -	B80D          	noovf:
  433:					;match found, mark as unnecessary read
  434: 2307+4	B80D  AF      		xra	a		;0 to accumulator
- 435: 2311+13	B80E  322ABC  		sta	rsflag		;rsflag = 0
+ 435: 2311+13	B80E  3244BC  		sta	rsflag		;rsflag = 0
  436: 2324+10	B811  C31CB8  		jmp	rwoper		;to perform the write
  437:				;
  438:     -	B814          	alloc:
  439:					;not an unallocated record, requires pre-read
  440: 2334+4	B814  AF      		xra	a		;0 to accum
- 441: 2338+13	B815  3224BC  		sta	unacnt		;unacnt = 0
+ 441: 2338+13	B815  323EBC  		sta	unacnt		;unacnt = 0
  442: 2351+5	B818  3C      		inr	a		;1 to accum
- 443: 2356+13	B819  322ABC  		sta	rsflag		;rsflag = 1
+ 443: 2356+13	B819  3244BC  		sta	rsflag		;rsflag = 1
  444:				;
  445:				;*****************************************************
  446:				;*                                                   *
@@ -1176,76 +1176,76 @@
  450:     -	B81C          	rwoper:
  451:					;enter here to perform the read/write
  452: 2369+4	B81C  AF      		xra	a		;zero to accum
- 453: 2373+13	B81D  3229BC  		sta	erflag		;no errors (yet)
- 454: 2386+13	B820  3A1CBC  		lda	seksec		;compute host sector
+ 453: 2373+13	B81D  3243BC  		sta	erflag		;no errors (yet)
+ 454: 2386+13	B820  3A36BC  		lda	seksec		;compute host sector
  455: 2399+8	B823  B71F    		rept	secshf
- 459: 2407+13	B825  3221BC  		sta	sekhst		;host sector to seek
+ 459: 2407+13	B825  323BBC  		sta	sekhst		;host sector to seek
  460:				;
  461:				;	active host sector?
- 462: 2420+10	B828  2122BC  		lxi	h,hstact	;host active flag
+ 462: 2420+10	B828  213CBC  		lxi	h,hstact	;host active flag
  463: 2430+7	B82B  7E      		mov	a,m
  464: 2437+10	B82C  3601    		mvi	m,1		;always becomes 1
  465: 2447+4	B82E  B7      		ora	a		;was it already?
  466: 2451+10	B82F  CA56B8  		jz	filhst		;fill host if not
  467:				;
  468:				;	host buffer active, same as seek buffer?
- 469: 2461+13	B832  3A19BC  		lda	sekdsk
- 470: 2474+10	B835  211DBC  		lxi	h,hstdsk	;same disk?
+ 469: 2461+13	B832  3A33BC  		lda	sekdsk
+ 470: 2474+10	B835  2137BC  		lxi	h,hstdsk	;same disk?
  471: 2484+7	B838  BE      		cmp	m		;sekdsk = hstdsk?
  472: 2491+10	B839  C24FB8  		jnz	nomatch
  473:				;
  474:				;	same disk, same track?
- 475: 2501+10	B83C  211EBC  		lxi	h,hsttrk
+ 475: 2501+10	B83C  2138BC  		lxi	h,hsttrk
  476: 2511+17	B83F  CDB7B8  		call	sektrkcmp	;sektrk = hsttrk?
  477: 2528+10	B842  C24FB8  		jnz	nomatch
  478:				;
  479:				;	same disk, same track, same buffer?
- 480: 2538+13	B845  3A21BC  		lda	sekhst
- 481: 2551+10	B848  2120BC  		lxi	h,hstsec	;sekhst = hstsec?
+ 480: 2538+13	B845  3A3BBC  		lda	sekhst
+ 481: 2551+10	B848  213ABC  		lxi	h,hstsec	;sekhst = hstsec?
  482: 2561+7	B84B  BE      		cmp	m
  483: 2568+10	B84C  CA73B8  		jz	match		;skip if match
  484:				;
  485:     -	B84F          	nomatch:
  486:					;proper disk, but not correct sector
- 487: 2578+13	B84F  3A23BC  		lda	hstwrt		;host written?
+ 487: 2578+13	B84F  3A3DBC  		lda	hstwrt		;host written?
  488: 2591+4	B852  B7      		ora	a
  489: 2595+11+6	B853  C4C3B8  		cnz	writehst	;clear host buff
  490:				;
  491:     -	B856          	filhst:
  492:					;may have to fill the host buffer
- 493: 2606+13	B856  3A19BC  		lda	sekdsk
- 494: 2619+13	B859  321DBC  		sta	hstdsk
- 495: 2632+16	B85C  2A1ABC  		lhld	sektrk
- 496: 2648+16	B85F  221EBC  		shld	hsttrk
- 497: 2664+13	B862  3A21BC  		lda	sekhst
- 498: 2677+13	B865  3220BC  		sta	hstsec
- 499: 2690+13	B868  3A2ABC  		lda	rsflag		;need to read?
+ 493: 2606+13	B856  3A33BC  		lda	sekdsk
+ 494: 2619+13	B859  3237BC  		sta	hstdsk
+ 495: 2632+16	B85C  2A34BC  		lhld	sektrk
+ 496: 2648+16	B85F  2238BC  		shld	hsttrk
+ 497: 2664+13	B862  3A3BBC  		lda	sekhst
+ 498: 2677+13	B865  323ABC  		sta	hstsec
+ 499: 2690+13	B868  3A44BC  		lda	rsflag		;need to read?
  500: 2703+4	B86B  B7      		ora	a
  501: 2707+11+6	B86C  C4C9B8  		cnz	readhst		;yes, if 1
  502: 2718+4	B86F  AF      		xra	a		;0 to accum
- 503: 2722+13	B870  3223BC  		sta	hstwrt		;no pending write
+ 503: 2722+13	B870  323DBC  		sta	hstwrt		;no pending write
  504:				;
  505:     -	B873          	match:
  506:					;copy data to or from buffer
- 507: 2735+13	B873  3A1CBC  		lda	seksec		;mask buffer number
+ 507: 2735+13	B873  3A36BC  		lda	seksec		;mask buffer number
  508: 2748+7	B876  E601    		ani	secmsk		;least signif bits
  509: 2755+5	B878  6F      		mov	l,a		;ready to shift
  510: 2760+7	B879  2600    		mvi	h,0		;double count
  511: 2767+70	B87B  29292929		rept	7		;shift left 7
 	              292929
  514:				;	hl has relative host buffer address
- 515: 2837+10	B882  112FBC  		lxi	d,hstbuf
+ 515: 2837+10	B882  1149BC  		lxi	d,hstbuf
  516: 2847+10	B885  19      		dad	d		;hl = host address
  517: 2857+4	B886  EB      		xchg			;now in DE
- 518: 2861+16	B887  2A2DBC  		lhld	dmaadr		;get/put CP/M data
+ 518: 2861+16	B887  2A47BC  		lhld	dmaadr		;get/put CP/M data
  519: 2877+7	B88A  0E80    		mvi	c,128		;length of move
- 520: 2884+13	B88C  3A2BBC  		lda	readop		;which way?
+ 520: 2884+13	B88C  3A45BC  		lda	readop		;which way?
  521: 2897+4	B88F  B7      		ora	a
  522: 2901+10	B890  C299B8  		jnz	rwmove		;skip if read
  523:				;
  524:				;	write operation, mark and switch direction
  525: 2911+7	B893  3E01    		mvi	a,1
- 526: 2918+13	B895  3223BC  		sta	hstwrt		;hstwrt = 1
+ 526: 2918+13	B895  323DBC  		sta	hstwrt		;hstwrt = 1
  527: 2931+4	B898  EB      		xchg			;source/dest swap
  528:				;
  529:     -	B899          	rwmove:
@@ -1258,18 +1258,18 @@
  536: 2964+10	B89E  C299B8  		jnz	rwmove
  537:				;
  538:				;	data has been moved to/from host buffer
- 539: 2974+13	B8A1  3A2CBC  		lda	wrtype		;write type
+ 539: 2974+13	B8A1  3A46BC  		lda	wrtype		;write type
  540: 2987+7	B8A4  FE01    		cpi	wrdir		;to directory?
- 541: 2994+13	B8A6  3A29BC  		lda	erflag		;in case of errors
+ 541: 2994+13	B8A6  3A43BC  		lda	erflag		;in case of errors
  542: 3007+5+6	B8A9  C0      		rnz			;no further processing
  543:				;
  544:				;	clear host buffer for directory write
  545: 3012+4	B8AA  B7      		ora	a		;errors?
  546: 3016+5+6	B8AB  C0      		rnz			;skip if so
  547: 3021+4	B8AC  AF      		xra	a		;0 to accum
- 548: 3025+13	B8AD  3223BC  		sta	hstwrt		;buffer written
+ 548: 3025+13	B8AD  323DBC  		sta	hstwrt		;buffer written
  549: 3038+17	B8B0  CDC3B8  		call	writehst
- 550: 3055+13	B8B3  3A29BC  		lda	erflag
+ 550: 3055+13	B8B3  3A43BC  		lda	erflag
  551: 3068+10	B8B6  C9      		ret
  552:				;
  553:				;*****************************************************
@@ -1280,7 +1280,7 @@
  558:     -	B8B7          	sektrkcmp:
  559:					;HL = .unatrk or .hsttrk, compare with sektrk
  560: 3078+4	B8B7  EB      		xchg
- 561: 3082+10	B8B8  211ABC  		lxi	h,sektrk
+ 561: 3082+10	B8B8  2134BC  		lxi	h,sektrk
  562: 3092+7	B8BB  1A      		ldax	d		;low byte compare
  563: 3099+7	B8BC  BE      		cmp	m		;same?
  564: 3106+5+6	B8BD  C0      		rnz			;return if not
@@ -1304,7 +1304,7 @@
  582:					;from hstbuf and return error flag in erflag.
  583:					;return erflag non-zero if error
  584: 3145+7	B8C3  F6FF    		ora	0FFh
- 585: 3152+13	B8C5  3229BC  		sta	erflag
+ 585: 3152+13	B8C5  3243BC  		sta	erflag
  586: 3165+10	B8C8  C9      		ret
  587:				
  588:				;
@@ -1314,395 +1314,405 @@
  592:					;into hstbuf and return error flag in erflag.
  593:				;	lxi	d, crlf
  594:				;	call	print
- 595:					
- 596: 3175+10	B8C9  DB0A    		in	fdcctrl		; Motor 1 on
- 597:     -	B8CB  CBD7    		setb	2, a
- 598: 3185+10	B8CD  D30A    		out	fdcctrl
- 599:				
- 600: 3195+17	B8CF  CD1DB9  		call	seektrk
- 601:					
- 602: 3212+17	B8D2  CDA9B9  		call	fdcwait
- 603: 3229+7	B8D5  3E46    		mvi	a, 046h		; Read sector MFM
- 604: 3236+17	B8D7  CDD6B9  		call	fdcio
- 605: 3253+17	B8DA  CD43B9  		call	dchrn		; Drive C H R N
- 606:					
- 607: 3270+4	B8DD  F3      		di
- 608:				
- 609:					; Main read loop
- 610: 3274+10	B8DE  010B00  		lxi	b, fdcdata	; B = 0 C = port
- 611: 3284+10	B8E1  212FBC  		lxi	h, hstbuf
- 612: 3294+10	B8E4  DB31    	readl:	in	irqstat
- 613: 3304+4	B8E6  87      		add	a
- 614:     -	B8E7  380A    		jrc	fdcret
- 615: 3308+10	B8E9  F2E4B8  		jp	p,readl
- 616:     -	B8EC  EDA2    		ini
- 617:     -	B8EE  20F4    		jrnz	readl
- 618: 3318+17	B8F0  CDE9B9  		call	fdctc		; Send TC
- 619:				
- 620: 3335+4	B8F3  FB      	fdcret	ei
- 621: 3339+17	B8F4  CDD6B9  		call	fdcio
- 622:					;push	psw
- 623:					;call	phex
- 624:					;pop	psw
- 625: 3356+7	B8F7  E6D8    		ani	0D8h		; Interested in bits 7,6,4,3
- 626: 3363+5	B8F9  47      		mov	b, a
- 627: 3368+17	B8FA  CDD6B9  		call	fdcio		; ST1
- 628:					;push	psw
- 629:					;call	phex
- 630:					;pop	psw
- 631: 3385+4	B8FD  B0      		ora	b
- 632: 3389+5	B8FE  47      		mov	b, a
- 633: 3394+17	B8FF  CDD6B9  		call	fdcio		; ST2
- 634:					;push	psw
- 635:					;call	phex
- 636:					;pop	psw
- 637: 3411+7	B902  E63F    		ani	03Fh		; Interested in bits 5..0
- 638: 3418+4	B904  B0      		ora	b
- 639: 3422+5	B905  47      		mov	b, a
- 640:					
- 641: 3427+17	B906  CDD6B9  		call	fdcio		; C
- 642: 3444+17	B909  CDD6B9  		call	fdcio		; H
- 643: 3461+17	B90C  CDD6B9  		call	fdcio		; R
- 644: 3478+17	B90F  CDD6B9  		call	fdcio		; N
- 645:					
- 646: 3495+10	B912  DB0A    		in	fdcctrl		; Motor 1 off
- 647:     -	B914  CB97    		res	2, a
- 648: 3505+10	B916  D30A    		out	fdcctrl
- 649:					
- 650: 3515+5	B918  78      		mov	a, b
- 651: 3520+13	B919  3229BC  		sta	erflag
- 652: 3533+10	B91C  C9      		ret	
- 653:				
- 654:				
- 655:     -	B91D          	seektrk:
- 656: 3543+17	B91D  CDA9B9  		call	fdcwait
- 657: 3560+7	B920  3E0F    		mvi	a, 00Fh		; SEEK
- 658: 3567+17	B922  CDD6B9  		call	fdcio
- 659: 3584+13	B925  3A1DBC  		lda	hstdsk		; Current disk
- 660: 3597+5	B928  3C      		inr	a
- 661: 3602+5	B929  47      		mov	b, a
- 662: 3607+13	B92A  3A1EBC  		lda	hsttrk
- 663: 3620+7	B92D  E620    		ani	020h		; high byte of 0..31 is side
- 664: 3627+4	B92F  1F      		rar			; Move bit D4 to D2
- 665: 3631+4	B930  1F      		rar
- 666: 3635+4	B931  1F      		rar
- 667: 3639+4	B932  B0      		ora	a, b
- 668: 3643+17	B933  CDD6B9  		call	fdcio
- 669: 3660+13	B936  3A1EBC  		lda	hsttrk		; Current track
- 670: 3673+17	B939  CDD6B9  		call	fdcio
- 671:				
- 672: 3690+10	B93C  DB31    	waitirq	in	portb
- 673:     -	B93E  CB7F    		bit	7, a
- 674:     -	B940  28FA    		jrz	waitirq
- 675:				
- 676: 3700+10	B942  C9      		ret
- 677:				
- 678: 3710+13	B943  3A1DBC  	dchrn:	lda	hstdsk		; Disk 1..2
- 679: 3723+5	B946  3C      		inr	a		; 1..2 thank you!
- 680: 3728+5	B947  47      		mov	b, a
- 681: 3733+13	B948  3A20BC  		lda	hstsec
- 682: 3746+4	B94B  1F      		rar			; Move bit D4 to D2
- 683: 3750+4	B94C  1F      		rar
- 684: 3754+7	B94D  E604    		ani	004h
- 685: 3761+4	B94F  B0      		ora	a, b
- 686: 3765+17	B950  CDD6B9  		call	fdcio
- 687:					
- 688: 3782+13	B953  3A1EBC  		lda	hsttrk		; Cylinder
- 689: 3795+17	B956  CDD6B9  		call	fdcio
- 690:					
- 691: 3812+13	B959  3A20BC  		lda	hstsec
- 692: 3825+4	B95C  1F      		rar			; D4 to D0
- 693: 3829+4	B95D  1F      		rar
- 694: 3833+4	B95E  1F      		rar
- 695: 3837+4	B95F  1F      		rar
- 696: 3841+7	B960  E601    		ani	1
- 697: 3848+17	B962  CDD6B9  		call	fdcio
- 698:					
- 699: 3865+13	B965  3A20BC  		lda	hstsec		; Record
- 700: 3878+7	B968  E60F    		ani	00Fh		; 
- 701: 3885+5	B96A  3C      		inr	a		; 1..16
- 702: 3890+17	B96B  CDD6B9  		call	fdcio
- 703:					
- 704: 3907+7	B96E  3E01    		mvi	a, 1		; 256 bytes per sector
- 705: 3914+17	B970  CDD6B9  		call	fdcio
- 706:					
- 707: 3931+7	B973  3E10    		mvi	a, 16		; EOT
- 708: 3938+17	B975  CDD6B9  		call	fdcio
- 709:					
- 710: 3955+7	B978  3E18    		mvi	a, 018h		; Gap Length
- 711: 3962+17	B97A  CDD6B9  		call	fdcio
+ 595: 3175+10	B8C9  219FBA  		lxi	h, retry
+ 596: 3185+10	B8CC  3603    		mvi	m, 3		; Retry attempts
+ 597:					
+ 598:				
+ 599:     -	B8CE          	readhst$loop:
+ 600: 3195+17	B8CE  CDE2B8  		call	readhst$main
+ 601: 3212+4	B8D1  B7      		ora	a
+ 602: 3216+5+6	B8D2  C8      		rz
+ 603: 3221+17	B8D3  CD9BB9  		call	fdcrst
+ 604: 3238+10	B8D6  219FBA  		lxi	h, retry
+ 605: 3248+10	B8D9  35      		dcr	m
+ 606:     -	B8DA  20F2    		jrnz	readhst$loop
+ 607: 3258+7	B8DC  3E01    		mvi	a, 1		; Return with error
+ 608: 3265+13	B8DE  3243BC  		sta	erflag
+ 609: 3278+10	B8E1  C9      		ret
+ 610:					
+ 611:					;
+ 612:					; Main read hoast function
+ 613:					;
+ 614:     -	B8E2          	readhst$main:
+ 615: 3288+10	B8E2  DB0A    		in	fdcctrl		; Motor 1 on
+ 616:     -	B8E4  CBD7    		setb	2, a
+ 617: 3298+10	B8E6  D30A    		out	fdcctrl
+ 618:				
+ 619: 3308+17	B8E8  CD36B9  		call	seektrk
+ 620:						
+ 621: 3325+17	B8EB  CDC2B9  		call	fdcwait
+ 622: 3342+4	B8EE  F3      		di
+ 623: 3346+7	B8EF  3E46    		mvi	a, 046h		; Read sector MFM
+ 624: 3353+10	B8F1  010B00  		lxi	b, fdcdata	; B = 0 C = port
+ 625: 3363+10	B8F4  2149BC  		lxi	h, hstbuf
+ 626: 3373+17	B8F7  CDEFB9  		call	fdcio
+ 627: 3390+17	B8FA  CD5CB9  		call	dchrn		; Drive C H R N
+ 628:					
+ 629:					; Main read loop
+ 630: 3407+10	B8FD  DB31    	readl:	in	irqstat
+ 631: 3417+4	B8FF  87      		add	a
+ 632:     -	B900  380A    		jrc	fdcret
+ 633: 3421+10	B902  F2FDB8  		jp	p,readl
+ 634:     -	B905  EDA2    		ini
+ 635:     -	B907  20F4    		jrnz	readl
+ 636: 3431+17	B909  CD02BA  		call	fdctc		; Send TC
+ 637:				
+ 638:					; Exit read/write function here
+ 639: 3448+4	B90C  FB      	fdcret:	ei
+ 640: 3452+17	B90D  CDEFB9  		call	fdcio
+ 641: 3469+7	B910  E6D8    		ani	0D8h		; Interested in bits 7,6,4,3
+ 642: 3476+5	B912  47      		mov	b, a
+ 643: 3481+17	B913  CDEFB9  		call	fdcio		; ST1
+ 644: 3498+4	B916  B0      		ora	b
+ 645: 3502+5	B917  47      		mov	b, a
+ 646: 3507+17	B918  CDEFB9  		call	fdcio		; ST2
+ 647: 3524+7	B91B  E63F    		ani	03Fh		; Interested in bits 5..0
+ 648: 3531+4	B91D  B0      		ora	b
+ 649: 3535+5	B91E  47      		mov	b, a
+ 650:					
+ 651: 3540+17	B91F  CDEFB9  		call	fdcio		; C
+ 652: 3557+17	B922  CDEFB9  		call	fdcio		; H
+ 653: 3574+17	B925  CDEFB9  		call	fdcio		; R
+ 654: 3591+17	B928  CDEFB9  		call	fdcio		; N
+ 655:					
+ 656: 3608+10	B92B  DB0A    		in	fdcctrl		; Motor 1 off
+ 657:     -	B92D  CB97    		res	2, a
+ 658: 3618+10	B92F  D30A    		out	fdcctrl
+ 659:					
+ 660: 3628+5	B931  78      		mov	a, b
+ 661: 3633+13	B932  3243BC  		sta	erflag
+ 662: 3646+10	B935  C9      		ret	
+ 663:				
+ 664:     -	B936          	seektrk:
+ 665: 3656+17	B936  CDC2B9  		call	fdcwait
+ 666: 3673+7	B939  3E0F    		mvi	a, 00Fh		; SEEK
+ 667: 3680+17	B93B  CDEFB9  		call	fdcio
+ 668: 3697+13	B93E  3A37BC  		lda	hstdsk		; Current disk
+ 669: 3710+5	B941  3C      		inr	a
+ 670: 3715+5	B942  47      		mov	b, a
+ 671: 3720+13	B943  3A38BC  		lda	hsttrk
+ 672: 3733+7	B946  E620    		ani	020h		; high byte of 0..31 is side
+ 673: 3740+4	B948  1F      		rar			; Move bit D4 to D2
+ 674: 3744+4	B949  1F      		rar
+ 675: 3748+4	B94A  1F      		rar
+ 676: 3752+4	B94B  B0      		ora	a, b
+ 677: 3756+17	B94C  CDEFB9  		call	fdcio
+ 678: 3773+13	B94F  3A38BC  		lda	hsttrk		; Current track
+ 679: 3786+17	B952  CDEFB9  		call	fdcio
+ 680:				
+ 681: 3803+10	B955  DB31    	waitirq	in	portb
+ 682:     -	B957  CB7F    		bit	7, a
+ 683:     -	B959  28FA    		jrz	waitirq
+ 684:				
+ 685: 3813+10	B95B  C9      		ret
+ 686:				
+ 687: 3823+13	B95C  3A37BC  	dchrn:	lda	hstdsk		; Disk 1..2
+ 688: 3836+5	B95F  3C      		inr	a		; 1..2 thank you!
+ 689: 3841+5	B960  47      		mov	b, a
+ 690: 3846+13	B961  3A3ABC  		lda	hstsec
+ 691: 3859+4	B964  1F      		rar			; Move bit D4 to D2
+ 692: 3863+4	B965  1F      		rar
+ 693: 3867+7	B966  E604    		ani	004h
+ 694: 3874+4	B968  B0      		ora	a, b
+ 695: 3878+17	B969  CDEFB9  		call	fdcio
+ 696:					
+ 697: 3895+13	B96C  3A38BC  		lda	hsttrk		; Cylinder
+ 698: 3908+17	B96F  CDEFB9  		call	fdcio
+ 699:					
+ 700: 3925+13	B972  3A3ABC  		lda	hstsec
+ 701: 3938+4	B975  1F      		rar			; D4 to D0
+ 702: 3942+4	B976  1F      		rar
+ 703: 3946+4	B977  1F      		rar
+ 704: 3950+4	B978  1F      		rar
+ 705: 3954+7	B979  E601    		ani	1
+ 706: 3961+17	B97B  CDEFB9  		call	fdcio
+ 707:					
+ 708: 3978+13	B97E  3A3ABC  		lda	hstsec		; Record
+ 709: 3991+7	B981  E60F    		ani	00Fh		; 
+ 710: 3998+5	B983  3C      		inr	a		; 1..16
+ 711: 4003+17	B984  CDEFB9  		call	fdcio
  712:					
- 713: 3979+4	B97D  AF      		xra	a		; DTL
- 714: 3983+17	B97E  CDD6B9  		call	fdcio
- 715: 4000+10	B981  C9      		ret
- 716:				
- 717: 4010+7	B982  3EFF    	fdcrst:	mvi	a, 0FFh		; Mode 3
- 718: 4017+10	B984  D333    		out	cmdb
- 719: 4027+7	B986  3EC1    		ld	a, 0C1h		; Specify input bits
- 720: 4034+10	B988  D333    		out	cmdb
+ 713: 4020+7	B987  3E01    		mvi	a, 1		; 256 bytes per sector
+ 714: 4027+17	B989  CDEFB9  		call	fdcio
+ 715:					
+ 716: 4044+7	B98C  3E10    		mvi	a, 16		; EOT
+ 717: 4051+17	B98E  CDEFB9  		call	fdcio
+ 718:					
+ 719: 4068+7	B991  3E18    		mvi	a, 018h		; Gap Length
+ 720: 4075+17	B993  CDEFB9  		call	fdcio
  721:					
- 722: 4044+10	B98A  DB0A    		in	fdcctrl
- 723:     -	B98C  CBEF    		setb	5,a		; Reset pin
- 724: 4054+10	B98E  D30A    		out	fdcctrl
- 725: 4064+7	B990  0600    		mvi	b, 0
- 726:     -	B992  10FE    	_fdr1:	djnz	_fdr1
- 727:     -	B994  CBAF    		res	5,a
- 728: 4071+10	B996  D30A    		out	fdcctrl
- 729:     -	B998  10FE    	_fdr2:	djnz	_fdr2
- 730:				
- 731: 4081+7	B99A  3E03    		mvi	a, 03h		; Specify
- 732: 4088+17	B99C  CDD6B9  		call	fdcio
- 733: 4105+7	B99F  3EBF    		mvi	a, 0BFh		; Step rate, head unload time
- 734: 4112+17	B9A1  CDD6B9  		call	fdcio
- 735: 4129+7	B9A4  3E10    		mvi	a, 010h		; Head load time
- 736: 4136+10	B9A6  C3D6B9  		jmp	fdcio
- 737:				
- 738:     -	B9A9          	fdcwait:
- 739: 4146+10	B9A9  010000  		lxi	b, 0
- 740:					
- 741: 4156+10	B9AC  DB0C    	fdcwl	in	fdcstat
- 742:					;push	psw
- 743:					;call	phex
- 744:					;lxi	d, bsbsbs
- 745:					;call	print
- 746:					;pop	psw
- 747: 4166+7	B9AE  E6C0    		and	0C0h		; RQM, DIO and seek status
- 748: 4173+7	B9B0  FE80    		cpi	080h
- 749: 4180+5+6	B9B2  C8      		rz
- 750:					
- 751: 4185+5	B9B3  0B      		dcx	b
- 752: 4190+5	B9B4  78      		mov	a, b
- 753: 4195+4	B9B5  B1      		ora	c
- 754:     -	B9B6  20F4    		jrnz	fdcwl
- 755:					
- 756: 4199+10	B9B8  DB0A    		in	fdcctrl
- 757:     -	B9BA  CBEF    		setb	5, a
- 758: 4209+10	B9BC  D30A    		out	fdcctrl
- 759: 4219+17	B9BE  CDCFB9  		call	wait
- 760:     -	B9C1  CBAF    		res	5, a
- 761: 4236+10	B9C3  D30A    		out	fdcctrl
- 762: 4246+17	B9C5  CDCFB9  		call	wait
- 763:				
- 764: 4263+7	B9C8  0E2E    		mvi	c, '.'
- 765: 4270+17	B9CA  CDE7B6  		call	conout
- 766:     -	B9CD  18DD    		jr	fdcwl
- 767:				
- 768: 4287+5	B9CF  0B      	wait	dcx	b
- 769: 4292+5	B9D0  78      		mov	a, b
- 770: 4297+4	B9D1  B1      		ora	c
- 771: 4301+10	B9D2  C2CFB9  		jnz	wait
- 772: 4311+10	B9D5  C9      		ret
- 773:				
- 774:     -	B9D6          	fdcio:
- 775: 4321+11	B9D6  F5      		push	psw
- 776: 4332+10	B9D7  DB0C    	fdcwl1:	in	fdcstat
- 777:     -	B9D9  CB7F    		bit	7,a
- 778:     -	B9DB  28FA    		jrz	fdcwl1
- 779:     -	B9DD  CB77    		bit	6,a
- 780:     -	B9DF  2004    		jrnz	fdcio1
- 781: 4342+10	B9E1  F1      		pop	psw
- 782: 4352+10	B9E2  D30B    		out	fdcdata
- 783:					;jmp	phex
- 784: 4362+10	B9E4  C9      		ret
- 785:					
- 786: 4372+10	B9E5  F1      	fdcio1:	pop	psw
- 787: 4382+10	B9E6  DB0B    		in	fdcdata
- 788:					;push	psw
- 789:					;call	phex
- 790:					;pop	psw
- 791: 4392+10	B9E8  C9      		ret
- 792:					
- 793: 4402+10	B9E9  DB0A    	fdctc:	in	fdcctrl		; Pulse TC bit
- 794:     -	B9EB  CBE7    		setb	4, a
- 795: 4412+10	B9ED  D30A    		out	fdcctrl
- 796:     -	B9EF  CBA7    		res	4, a
- 797: 4422+10	B9F1  D30A    		out	fdcctrl
- 798: 4432+10	B9F3  C9      		ret
- 799:				
- 800:					; Print the message at HL
- 801: 4442+7	B9F4  1A      	print	ldax	d
- 802: 4449+5	B9F5  4F      		mov	c, a
- 803: 4454+5	B9F6  13      		inx	d
- 804: 4459+4	B9F7  B7      		ora	a
- 805: 4463+5+6	B9F8  C8      		rz
- 806: 4468+17	B9F9  CDE7B6  		call	conout
- 807: 4485+10	B9FC  C3F4B9  		jmp	print
+ 722: 4092+4	B996  AF      		xra	a		; DTL
+ 723: 4096+17	B997  CDEFB9  		call	fdcio
+ 724: 4113+10	B99A  C9      		ret
+ 725:				
+ 726: 4123+7	B99B  3EFF    	fdcrst:	mvi	a, 0FFh		; Mode 3
+ 727: 4130+10	B99D  D333    		out	cmdb
+ 728: 4140+7	B99F  3EC1    		ld	a, 0C1h		; Specify input bits
+ 729: 4147+10	B9A1  D333    		out	cmdb
+ 730:					
+ 731: 4157+10	B9A3  DB0A    		in	fdcctrl
+ 732:     -	B9A5  CBEF    		setb	5,a		; Reset pin
+ 733: 4167+10	B9A7  D30A    		out	fdcctrl
+ 734: 4177+7	B9A9  0600    		mvi	b, 0
+ 735:     -	B9AB  10FE    	_fdr1:	djnz	_fdr1
+ 736:     -	B9AD  CBAF    		res	5,a
+ 737: 4184+10	B9AF  D30A    		out	fdcctrl
+ 738:     -	B9B1  10FE    	_fdr2:	djnz	_fdr2
+ 739:				
+ 740: 4194+7	B9B3  3E03    		mvi	a, 03h		; Specify
+ 741: 4201+17	B9B5  CDEFB9  		call	fdcio
+ 742: 4218+7	B9B8  3EBF    		mvi	a, 0BFh		; Step rate, head unload time
+ 743: 4225+17	B9BA  CDEFB9  		call	fdcio
+ 744: 4242+7	B9BD  3E10    		mvi	a, 010h		; Head load time
+ 745: 4249+10	B9BF  C3EFB9  		jmp	fdcio
+ 746:				
+ 747:     -	B9C2          	fdcwait:
+ 748: 4259+10	B9C2  010000  		lxi	b, 0
+ 749:					
+ 750: 4269+10	B9C5  DB0C    	fdcwl	in	fdcstat
+ 751:					;push	psw
+ 752:					;call	phex
+ 753:					;lxi	d, bsbsbs
+ 754:					;call	print
+ 755:					;pop	psw
+ 756: 4279+7	B9C7  E6C0    		and	0C0h		; RQM, DIO and seek status
+ 757: 4286+7	B9C9  FE80    		cpi	080h
+ 758: 4293+5+6	B9CB  C8      		rz
+ 759:					
+ 760: 4298+5	B9CC  0B      		dcx	b
+ 761: 4303+5	B9CD  78      		mov	a, b
+ 762: 4308+4	B9CE  B1      		ora	c
+ 763:     -	B9CF  20F4    		jrnz	fdcwl
+ 764:					
+ 765: 4312+10	B9D1  DB0A    		in	fdcctrl
+ 766:     -	B9D3  CBEF    		setb	5, a
+ 767: 4322+10	B9D5  D30A    		out	fdcctrl
+ 768: 4332+17	B9D7  CDE8B9  		call	wait
+ 769:     -	B9DA  CBAF    		res	5, a
+ 770: 4349+10	B9DC  D30A    		out	fdcctrl
+ 771: 4359+17	B9DE  CDE8B9  		call	wait
+ 772:				
+ 773: 4376+7	B9E1  0E2E    		mvi	c, '.'
+ 774: 4383+17	B9E3  CDE7B6  		call	conout
+ 775:     -	B9E6  18DD    		jr	fdcwl
+ 776:				
+ 777: 4400+5	B9E8  0B      	wait	dcx	b
+ 778: 4405+5	B9E9  78      		mov	a, b
+ 779: 4410+4	B9EA  B1      		ora	c
+ 780: 4414+10	B9EB  C2E8B9  		jnz	wait
+ 781: 4424+10	B9EE  C9      		ret
+ 782:				
+ 783:     -	B9EF          	fdcio:
+ 784: 4434+11	B9EF  F5      		push	psw
+ 785: 4445+10	B9F0  DB0C    	fdcwl1:	in	fdcstat
+ 786:     -	B9F2  CB7F    		bit	7,a
+ 787:     -	B9F4  28FA    		jrz	fdcwl1
+ 788:     -	B9F6  CB77    		bit	6,a
+ 789:     -	B9F8  2004    		jrnz	fdcio1
+ 790: 4455+10	B9FA  F1      		pop	psw
+ 791: 4465+10	B9FB  D30B    		out	fdcdata
+ 792:					;jmp	phex
+ 793: 4475+10	B9FD  C9      		ret
+ 794:					
+ 795: 4485+10	B9FE  F1      	fdcio1:	pop	psw
+ 796: 4495+10	B9FF  DB0B    		in	fdcdata
+ 797:					;push	psw
+ 798:					;call	phex
+ 799:					;pop	psw
+ 800: 4505+10	BA01  C9      		ret
+ 801:					
+ 802: 4515+10	BA02  DB0A    	fdctc:	in	fdcctrl		; Pulse TC bit
+ 803:     -	BA04  CBE7    		setb	4, a
+ 804: 4525+10	BA06  D30A    		out	fdcctrl
+ 805:     -	BA08  CBA7    		res	4, a
+ 806: 4535+10	BA0A  D30A    		out	fdcctrl
+ 807: 4545+10	BA0C  C9      		ret
  808:				
- 809:					
- 810: 4495+4	B9FF  F3      	kbinit:	di
- 811:     -	BA00  ED5E    		im2
- 812: 4499+7	BA02  3E07    		mvi	a, 07h		; Disable interrupts
- 813: 4506+10	BA04  D332    		out	cmda
- 814: 4516+10	BA06  D333    		out	cmdb
- 815:					
- 816: 4526+7	BA08  3E96    		mvi	a, (low irqtab)
- 817: 4533+10	BA0A  D332    		out	cmda
- 818: 4543+10	BA0C  D333    		out	cmdb
- 819: 4553+7	BA0E  3EBB    		mvi	a, (high irqtab)
- 820:     -	BA10  ED47    		stai
- 821:					
- 822: 4560+7	BA12  3E4F    		mvi	a, 04Fh		; Set mode
- 823: 4567+10	BA14  D332    		out	cmda
- 824: 4577+7	BA16  3E87    		mvi	a, 087h		; Enable interrupts for PORTA
- 825: 4584+10	BA18  D332    		out	cmda
- 826:					
- 827: 4594+7	BA1A  3EFF    		mvi	a, 0FFh
- 828: 4601+10	BA1C  D333    		out	cmdb
- 829: 4611+7	BA1E  3EC1    		mvi	a, 0C1h		; Input bits
- 830: 4618+10	BA20  D333    		out	cmdb
- 831:					
- 832: 4628+4	BA22  AF      		xra	a
- 833: 4632+10	BA23  D331    		out	portb
- 834: 4642+13	BA25  32B8BB  		sta	inptr
- 835: 4655+13	BA28  32B9BB  		sta	outptr
- 836:					
- 837: 4668+10	BA2B  DB30    		in	porta
- 838: 4678+10	BA2D  DB31    		in	portb
- 839:					
- 840: 4688+4	BA2F  FB      		ei
- 841: 4692+10	BA30  C9      		ret
- 842:					
- 843: 4702+11	BA31  F5      	kbirq:	push	psw
- 844: 4713+11	BA32  E5      		push	h
- 845: 4724+11	BA33  D5      		push	d
- 846: 4735+11	BA34  C5      		push	b
- 847:					
- 848: 4746+13	BA35  3AB8BB  		lda	inptr
- 849: 4759+5	BA38  5F      		mov	e, a
- 850: 4764+7	BA39  1600    		mvi	d, 0
- 851: 4771+10	BA3B  2198BB  		lxi	h, buffer
- 852: 4781+10	BA3E  19      		dad	d
- 853: 4791+5	BA3F  3C      		inr	a
- 854: 4796+7	BA40  E61F    		ani	31		; Modulo 32
- 855: 4803+13	BA42  32B8BB  		sta	inptr
+ 809:					; Print the message at HL
+ 810: 4555+7	BA0D  1A      	print	ldax	d
+ 811: 4562+5	BA0E  4F      		mov	c, a
+ 812: 4567+5	BA0F  13      		inx	d
+ 813: 4572+4	BA10  B7      		ora	a
+ 814: 4576+5+6	BA11  C8      		rz
+ 815: 4581+17	BA12  CDE7B6  		call	conout
+ 816: 4598+10	BA15  C30DBA  		jmp	print
+ 817:				
+ 818:					
+ 819: 4608+4	BA18  F3      	kbinit:	di
+ 820:     -	BA19  ED5E    		im2
+ 821: 4612+7	BA1B  3E07    		mvi	a, 07h		; Disable interrupts
+ 822: 4619+10	BA1D  D332    		out	cmda
+ 823: 4629+10	BA1F  D333    		out	cmdb
+ 824:					
+ 825: 4639+7	BA21  3EB0    		mvi	a, (low irqtab)
+ 826: 4646+10	BA23  D332    		out	cmda
+ 827: 4656+10	BA25  D333    		out	cmdb
+ 828: 4666+7	BA27  3EBB    		mvi	a, (high irqtab)
+ 829:     -	BA29  ED47    		stai
+ 830:					
+ 831: 4673+7	BA2B  3E4F    		mvi	a, 04Fh		; Set mode
+ 832: 4680+10	BA2D  D332    		out	cmda
+ 833: 4690+7	BA2F  3E87    		mvi	a, 087h		; Enable interrupts for PORTA
+ 834: 4697+10	BA31  D332    		out	cmda
+ 835:					
+ 836: 4707+7	BA33  3EFF    		mvi	a, 0FFh
+ 837: 4714+10	BA35  D333    		out	cmdb
+ 838: 4724+7	BA37  3EC1    		mvi	a, 0C1h		; Input bits
+ 839: 4731+10	BA39  D333    		out	cmdb
+ 840:					
+ 841: 4741+4	BA3B  AF      		xra	a
+ 842: 4745+10	BA3C  D331    		out	portb
+ 843: 4755+13	BA3E  32D2BB  		sta	inptr
+ 844: 4768+13	BA41  32D3BB  		sta	outptr
+ 845:					
+ 846: 4781+10	BA44  DB30    		in	porta
+ 847: 4791+10	BA46  DB31    		in	portb
+ 848:					
+ 849: 4801+4	BA48  FB      		ei
+ 850: 4805+10	BA49  C9      		ret
+ 851:					
+ 852: 4815+11	BA4A  F5      	kbirq:	push	psw
+ 853: 4826+11	BA4B  E5      		push	h
+ 854: 4837+11	BA4C  D5      		push	d
+ 855: 4848+11	BA4D  C5      		push	b
  856:					
- 857: 4816+10	BA45  DB30    		in	porta
- 858: 4826+7	BA47  77      		mov	m, a
- 859:					
- 860: 4833+10	BA48  C1      		pop	b
- 861: 4843+10	BA49  D1      		pop	d
- 862: 4853+10	BA4A  E1      		pop	h
- 863: 4863+10	BA4B  F1      		pop	psw
- 864: 4873+4	BA4C  FB      		ei
- 865:     -	BA4D  ED4D    		reti
- 866:				
- 867:     -	BA4F  34376B20	mesg	db	"47k CP/M 2.2"
+ 857: 4859+13	BA4E  3AD2BB  		lda	inptr
+ 858: 4872+5	BA51  5F      		mov	e, a
+ 859: 4877+7	BA52  1600    		mvi	d, 0
+ 860: 4884+10	BA54  21B2BB  		lxi	h, buffer
+ 861: 4894+10	BA57  19      		dad	d
+ 862: 4904+5	BA58  3C      		inr	a
+ 863: 4909+7	BA59  E61F    		ani	31		; Modulo 32
+ 864: 4916+13	BA5B  32D2BB  		sta	inptr
+ 865:					
+ 866: 4929+10	BA5E  DB30    		in	porta
+ 867: 4939+7	BA60  77      		mov	m, a
+ 868:					
+ 869: 4946+10	BA61  C1      		pop	b
+ 870: 4956+10	BA62  D1      		pop	d
+ 871: 4966+10	BA63  E1      		pop	h
+ 872: 4976+10	BA64  F1      		pop	psw
+ 873: 4986+4	BA65  FB      		ei
+ 874:     -	BA66  ED4D    		reti
+ 875:				
+ 876:     -	BA68  34376B20	mesg	db	"47k CP/M 2.2"
 	              43502F4D
 	              20322E32
- 868:     -	BA5B  0D0A00  	crlf	db	cr,lf,0
- 869:     -	BA5E  08080800	bsbsbs	db	8,8,8,0
- 870:				
- 871:     -	BA62  00000000		dw	0,0,0,0,0,0
+ 877:     -	BA74  0D0A00  	crlf	db	cr,lf,0
+ 878:     -	BA77  08080800	bsbsbs	db	8,8,8,0
+ 879:				
+ 880:     -	BA7B  00000000		dw	0,0,0,0,0,0
 	              00000000
 	              00000000
- 872:     -	BA6E  00000000		dw	0,0,0,0,0,0
+ 881:     -	BA87  00000000		dw	0,0,0,0,0,0
 	              00000000
 	              00000000
- 873:     -	BA7A  00000000		dw	0,0,0,0,0,0
+ 882:     -	BA93  00000000		dw	0,0,0,0,0,0
 	              00000000
 	              00000000
- 874:     -	BA86          	stack:
- 875:				
- 876:				;phex	push	psw
- 877:				;	mvi	c, ' '
- 878:				;	call	conout
- 879:				;	pop	psw
- 880:				;	push	psw		; Will use A twice
- 881:				;	rar			; Shift upper to lower nibble
- 882:				;	rar
- 883:				;	rar
- 884:				;	rar
- 885:				;	call	phex1		; Print it
- 886:				;	pop	psw		; Restore original Acc
- 887:				;phex1	ani	00Fh		; Mask off high nibble
- 888:				;	adi	090h		; Decimal adjust for ASCII
- 889:				;	daa
- 890:				;	aci	040h
- 891:				;	daa
- 892:				;	mov	c, a		; Print it
- 893:				;	jmp	conout
- 894:				;	ret
- 895:					
- 896:				
- 897:     -	BA86          	keytab:	
- 898:     -	BA86  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
-	              00000000
-	              00000000
-	              00000000
- 899:     -	BA96  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+ 883:     -	BA9F          	stack:
+ 884:				
+ 885:				;phex	push	psw
+ 886:				;	mvi	c, ' '
+ 887:				;	call	conout
+ 888:				;	pop	psw
+ 889:				;	push	psw		; Will use A twice
+ 890:				;	rar			; Shift upper to lower nibble
+ 891:				;	rar
+ 892:				;	rar
+ 893:				;	rar
+ 894:				;	call	phex1		; Print it
+ 895:				;	pop	psw		; Restore original Acc
+ 896:				;phex1	ani	00Fh		; Mask off high nibble
+ 897:				;	adi	090h		; Decimal adjust for ASCII
+ 898:				;	daa
+ 899:				;	aci	040h
+ 900:				;	daa
+ 901:				;	mov	c, a		; Print it
+ 902:				;	jmp	conout
+ 903:				;	ret
+ 904:					
+ 905:     -	BA9F  00      	retry:	db	0		;error retry counter
+ 906:				
+ 907:     -	BAA0          	keytab:	
+ 908:     -	BAA0  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
 	              00000000
 	              00000000
 	              00000000
- 900:     -	BAA6  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,2Eh,08h,20h,00h,00h,00h
+ 909:     -	BAB0  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+	              00000000
+	              00000000
+	              00000000
+ 910:     -	BAC0  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,2Eh,08h,20h,00h,00h,00h
 	              00000000
 	              00002E08
 	              20000000
- 901:     -	BAB6  00000000		db	00h,00h,00h,00h,00h,00h,00h,3Fh,2Ch,6Dh,6Eh,62h,76h,63h,78h,7Ah
+ 911:     -	BAD0  00000000		db	00h,00h,00h,00h,00h,00h,00h,3Fh,2Ch,6Dh,6Eh,62h,76h,63h,78h,7Ah
 	              0000003F
 	              2C6D6E62
 	              7663787A
- 902:     -	BAC6  00000000		db	00h,00h,00h,00h,0Dh,27h,3Bh,6Ch,6Bh,6Ah,68h,67h,66h,64h,73h,61h
+ 912:     -	BAE0  00000000		db	00h,00h,00h,00h,0Dh,27h,3Bh,6Ch,6Bh,6Ah,68h,67h,66h,64h,73h,61h
 	              0D273B6C
 	              6B6A6867
 	              66647361
- 903:     -	BAD6  00000000		db	00h,00h,00h,00h,00h,5Bh,70h,6Fh,69h,75h,79h,74h,72h,65h,77h,71h
+ 913:     -	BAF0  00000000		db	00h,00h,00h,00h,00h,5Bh,70h,6Fh,69h,75h,79h,74h,72h,65h,77h,71h
 	              005B706F
 	              69757974
 	              72657771
- 904:     -	BAE6  0000002D		db	00h,00h,00h,2Dh,3Dh,30h,39h,38h,37h,36h,35h,34h,33h,32h,31h,09h
+ 914:     -	BB00  0000002D		db	00h,00h,00h,2Dh,3Dh,30h,39h,38h,37h,36h,35h,34h,33h,32h,31h,09h
 	              3D303938
 	              37363534
 	              33323109
- 905:     -	BAF6  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+ 915:     -	BB10  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
 	              00000000
 	              00000000
 	              00000000
- 906:     -	BB06  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+ 916:     -	BB20  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
 	              00000000
 	              00000000
 	              00000000
- 907:     -	BB16  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+ 917:     -	BB30  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
 	              00000000
 	              00000000
 	              00000000
- 908:     -	BB26  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,2Eh,08h,20h,00h,00h,00h
+ 918:     -	BB40  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,2Eh,08h,20h,00h,00h,00h
 	              00000000
 	              00002E08
 	              20000000
- 909:     -	BB36  00000000		db	00h,00h,00h,00h,00h,00h,00h,2Fh,2Ch,4Dh,4Eh,42h,56h,43h,58h,5Ah
+ 919:     -	BB50  00000000		db	00h,00h,00h,00h,00h,00h,00h,2Fh,2Ch,4Dh,4Eh,42h,56h,43h,58h,5Ah
 	              0000002F
 	              2C4D4E42
 	              5643585A
- 910:     -	BB46  00000000		db	00h,00h,00h,00h,0Dh,22h,3Ah,4Ch,4Bh,4Ah,48h,47h,46h,44h,53h,41h
+ 920:     -	BB60  00000000		db	00h,00h,00h,00h,0Dh,22h,3Ah,4Ch,4Bh,4Ah,48h,47h,46h,44h,53h,41h
 	              0D223A4C
 	              4B4A4847
 	              46445341
- 911:     -	BB56  00000000		db	00h,00h,00h,00h,00h,5Dh,50h,4Fh,49h,55h,59h,54h,52h,45h,57h,51h
+ 921:     -	BB70  00000000		db	00h,00h,00h,00h,00h,5Dh,50h,4Fh,49h,55h,59h,54h,52h,45h,57h,51h
 	              005D504F
 	              49555954
 	              52455751
- 912:     -	BB66  0000002B		db	00h,00h,00h,2Bh,5Fh,29h,28h,2Ah,26h,5Eh,25h,24h,23h,40h,21h,09h
+ 922:     -	BB80  0000002B		db	00h,00h,00h,2Bh,5Fh,29h,28h,2Ah,26h,5Eh,25h,24h,23h,40h,21h,09h
 	              5F29282A
 	              265E2524
 	              23402109
- 913:     -	BB76  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
+ 923:     -	BB90  00000000		db	00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h,00h
 	              00000000
 	              00000000
 	              00000000
- 914:     -	BB96          		org	(($ + 16) AND 0FFFEh)
- 915:				
- 916:     -	BB96  31BA    	irqtab:	dw	kbirq
- 917:				
- 918:     -	BB98          	buffer:	ds	32		; Keyboard buffer
- 919:     -	BBB8  00      	inptr:	db	0
- 920:     -	BBB9  00      	outptr:	db	0
- 921:				
- 922:     -	BBBA  D9BB0000		disks	1
+ 924:     -	BBB0          		org	(($ + 16) AND 0FFFEh)
+ 925:				
+ 926:     -	BBB0  4ABA    	irqtab:	dw	kbirq
+ 927:				
+ 928:     -	BBB2          	buffer:	ds	32		; Keyboard buffer
+ 929:     -	BBD2  00      	inptr:	db	0
+ 930:     -	BBD3  00      	outptr:	db	0
+ 931:				
+ 932:     -	BBD4  F3BB0000		disks	1
 	              00000000
-	              2FBDCABB
-	              C3BDAFBD
- 923:					;      dn,fsc,   lsc,[skf],bls   ,dks,dir,cks,ofs,[0]
- 924:     -	BBCA  4000040F		diskdef 0,  1,cpmspt,1    ,blksiz,160,128,128,1
+	              49BDE4BB
+	              DDBDC9BD
+ 933:					;      dn,fsc,   lsc,[skf],bls   ,dks,dir,cks,ofs,[0]
+ 934:     -	BBE4  4000040F		diskdef 0,  1,cpmspt,1    ,blksiz,160,128,128,1
 	              019F007F
 	              00C00020
 	              00010001
@@ -1722,38 +1732,38 @@
 	              36373839
 	              3A3B3C3D
 	              3E3F40
- 925:				;
- 926:				;	the remainder of the cbios is reserved uninitialized
- 927:				;	data area, and does not need to be a Part of the
- 928:				;	system	memory image (the space must be available,
- 929:				;	however, between"begdat" and"enddat").
- 930:				;
- 931:     -	BC19          	sekdsk:	ds	1		;seek disk number
- 932:     -	BC1A          	sektrk:	ds	2		;seek track number
- 933:     -	BC1C          	seksec:	ds	1		;seek sector number
- 934:				;
- 935:     -	BC1D          	hstdsk:	ds	1		;host disk number
- 936:     -	BC1E          	hsttrk:	ds	2		;host track number
- 937:     -	BC20          	hstsec:	ds	1		;host sector number
- 938:				;
- 939:     -	BC21          	sekhst:	ds	1		;seek shr secshf
- 940:     -	BC22          	hstact:	ds	1		;host active flag
- 941:     -	BC23          	hstwrt:	ds	1		;host written flag
- 942:				;
- 943:     -	BC24          	unacnt:	ds	1		;unalloc rec cnt
- 944:     -	BC25          	unadsk:	ds	1		;last unalloc disk
- 945:     -	BC26          	unatrk:	ds	2		;last unalloc track
- 946:     -	BC28          	unasec:	ds	1		;last unalloc sector
- 947:				;
- 948:     -	BC29          	erflag:	ds	1		;error reporting
- 949:     -	BC2A          	rsflag:	ds	1		;read sector flag
- 950:     -	BC2B          	readop:	ds	1		;1 if read operation
- 951:     -	BC2C          	wrtype:	ds	1		;write operation type
- 952:     -	BC2D          	dmaadr:	ds	2		;last dma address
- 953:     -	BC2F          	hstbuf:	ds	hstsiz		;host buffer
- 954:     -	        		endef
- 955:					
- 956:     -	BDE3  00000000		rept	(0C1C0h - $)
+ 935:				;
+ 936:				;	the remainder of the cbios is reserved uninitialized
+ 937:				;	data area, and does not need to be a Part of the
+ 938:				;	system	memory image (the space must be available,
+ 939:				;	however, between"begdat" and"enddat").
+ 940:				;
+ 941:     -	BC33          	sekdsk:	ds	1		;seek disk number
+ 942:     -	BC34          	sektrk:	ds	2		;seek track number
+ 943:     -	BC36          	seksec:	ds	1		;seek sector number
+ 944:				;
+ 945:     -	BC37          	hstdsk:	ds	1		;host disk number
+ 946:     -	BC38          	hsttrk:	ds	2		;host track number
+ 947:     -	BC3A          	hstsec:	ds	1		;host sector number
+ 948:				;
+ 949:     -	BC3B          	sekhst:	ds	1		;seek shr secshf
+ 950:     -	BC3C          	hstact:	ds	1		;host active flag
+ 951:     -	BC3D          	hstwrt:	ds	1		;host written flag
+ 952:				;
+ 953:     -	BC3E          	unacnt:	ds	1		;unalloc rec cnt
+ 954:     -	BC3F          	unadsk:	ds	1		;last unalloc disk
+ 955:     -	BC40          	unatrk:	ds	2		;last unalloc track
+ 956:     -	BC42          	unasec:	ds	1		;last unalloc sector
+ 957:				;
+ 958:     -	BC43          	erflag:	ds	1		;error reporting
+ 959:     -	BC44          	rsflag:	ds	1		;read sector flag
+ 960:     -	BC45          	readop:	ds	1		;1 if read operation
+ 961:     -	BC46          	wrtype:	ds	1		;write operation type
+ 962:     -	BC47          	dmaadr:	ds	2		;last dma address
+ 963:     -	BC49          	hstbuf:	ds	hstsiz		;host buffer
+ 964:     -	        		endef
+ 965:					
+ 966:     -	BDFD  00000000		rept	(0C1C0h - $)
 	              00000000
 	              00000000
 	              00000000
@@ -1993,16 +2003,9 @@
 	              00000000
 	              00000000
 	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00
- 959:					
- 960:     -	C1C0          		end
+	              000000
+ 969:					
+ 970:     -	C1C0          		end
 
 
 
@@ -2010,10 +2013,10 @@ Statistics:
 
      4	passes
      0	jr promotions
-   155	symbols
+   158	symbols
   2502	bytes
 
-  1196	macro calls
+  1171	macro calls
   8859	macro bytes
      0	invented symbols
 
@@ -2028,13 +2031,13 @@ DE             =02        2
 HL             =04        4
 IX             =04        4
 IY             =04        4
-_fdr1           B992      47506
-_fdr2           B998      47512
+_fdr1           B9AB      47531
+_fdr2           B9B1      47537
 alloc           B814      47124
 als0           =14        20
-alv0            BDAF      48559
+alv0            BDC9      48585
 bdos           =A806      43014
-begdat         =BD2F      48431
+begdat         =BD49      48457
 bias           =6C00      27648
 bios           =B600      46592
 blkmsk         =0F        15
@@ -2043,8 +2046,8 @@ blksiz         = 800      2048
 blkval         =01        1
 boot            B633      46643
 bs             =08        8
-bsbsbs          BA5E      47710
-buffer          BB98      48024
+bsbsbs          BA77      47735
+buffer          BBB2      48050
 ccp            =A000      40960
 cdisk          =04        4
 chkuna          B7D5      47061
@@ -2059,36 +2062,36 @@ conout1         B6FD      46845
 const           B6BB      46779
 cpmspt         =40        64
 cr             =0D        13
-crlf            BA5B      47707
+crlf            BA74      47732
 css0           =20        32
-csv0            BDC3      48579
+csv0            BDDD      48605
 cursor          B759      46937
 datsiz         =B4        180
-dchrn           B943      47427
+dchrn           B95C      47452
 dirbks         =40        64
 dirblk         =C000      49152
-dirbuf          BD2F      48431
+dirbuf          BD49      48457
 dirrem         =00        0
-dmaadr          BC2D      48173
-dpb0           =BBCA      48074
-dpbase         =BBBA      48058
-dpe0            BBBA      48058
+dmaadr          BC47      48199
+dpb0           =BBE4      48100
+dpbase         =BBD4      48084
+dpe0            BBD4      48084
 dsknxt         =01        1
-enddat         =BDE3      48611
+enddat         =BDFD      48637
 endlin          B74D      46925
-erflag          BC29      48169
+erflag          BC43      48195
 extmsk         =01        1
 fdcctrl        =0A        10
 fdcdata        =0B        11
-fdcio           B9D6      47574
-fdcio1          B9E5      47589
-fdcret          B8F3      47347
-fdcrst          B982      47490
+fdcio           B9EF      47599
+fdcio1          B9FE      47614
+fdcret          B90C      47372
+fdcrst          B99B      47515
 fdcstat        =0C        12
-fdctc           B9E9      47593
-fdcwait         B9A9      47529
-fdcwl           B9AC      47532
-fdcwl1          B9D7      47575
+fdctc           BA02      47618
+fdcwait         B9C2      47554
+fdcwl           B9C5      47557
+fdcwl1          B9F0      47600
 filhst          B856      47190
 gcdm           =40        64
 gcdn           =01        1
@@ -2097,29 +2100,29 @@ gcdx           =40        64
 gocpm           B696      46742
 home            B75B      46939
 homed           B765      46949
-hstact          BC22      48162
+hstact          BC3C      48188
 hstblk         =02        2
-hstbuf          BC2F      48175
-hstdsk          BC1D      48157
+hstbuf          BC49      48201
+hstdsk          BC37      48183
 hsthpc         =02        2
-hstsec          BC20      48160
+hstsec          BC3A      48186
 hstsiz         = 100      256
 hstsph         =10        16
 hstspt         =20        32
-hsttrk          BC1E      48158
-hstwrt          BC23      48163
-inptr           BBB8      48056
+hsttrk          BC38      48184
+hstwrt          BC3D      48189
+inptr           BBD2      48082
 iobyte         =03        3
 irqstat        =31        49
-irqtab          BB96      48022
-kbinit          B9FF      47615
-kbirq           BA31      47665
-keytab          BA86      47750
+irqtab          BBB0      48048
+kbinit          BA18      47640
+kbirq           BA4A      47690
+keytab          BAA0      47776
 lf             =0A        10
 list            B752      46930
 listst          B753      46931
 match           B873      47219
-mesg            BA4F      47695
+mesg            BA68      47720
 msize          =2F        47
 ndisks         =01        1
 nelts          =40        64
@@ -2129,18 +2132,21 @@ noovf           B80D      47117
 nsects         =2C        44
 nxtbas         =01        1
 nxtsec         =01        1
-outptr          BBB9      48057
+outptr          BBD3      48083
 porta          =30        48
 portb          =31        49
-print           B9F4      47604
+print           BA0D      47629
 punch           B755      46933
 rdloop          B671      46705
 read            B79D      47005
 reader          B756      46934
 readhst         B8C9      47305
-readl           B8E4      47332
-readop          BC2B      48171
-rsflag          BC2A      48170
+readhstloop     B8CE      47310
+readhstmain     B8E2      47330
+readl           B8FD      47357
+readop          BC45      48197
+retry           BA9F      47775
+rsflag          BC44      48196
 rwmove          B899      47257
 rwoper          B81C      47132
 scrll           B734      46900
@@ -2150,29 +2156,29 @@ secmsk         =01        1
 secshf         =01        1
 sectors        =40        64
 sectran         B79A      47002
-seektrk         B91D      47389
-sekdsk          BC19      48153
-sekhst          BC21      48161
-seksec          BC1C      48156
-sektrk          BC1A      48154
+seektrk         B936      47414
+sekdsk          BC33      48179
+sekhst          BC3B      48187
+seksec          BC36      48182
+sektrk          BC34      48180
 sektrkcmp       B8B7      47287
 seldsk          B778      46968
 setdma          B794      46996
 setsec          B78F      46991
 settrk          B788      46984
-stack           BA86      47750
-unacnt          BC24      48164
-unadsk          BC25      48165
-unasec          BC28      48168
-unatrk          BC26      48166
-wait            B9CF      47567
-waitirq         B93C      47420
+stack           BA9F      47775
+unacnt          BC3E      48190
+unadsk          BC3F      48191
+unasec          BC42      48194
+unatrk          BC40      48192
+wait            B9E8      47592
+waitirq         B955      47445
 wboot           B652      46674
 wboote          B603      46595
 wrall          =00        0
 wrdir          =01        1
 write           B7B1      47025
 writehst        B8C3      47299
-wrtype          BC2C      48172
+wrtype          BC46      48198
 wrual          =02        2
-xlt0           =BBD9      48089
+xlt0           =BBF3      48115
